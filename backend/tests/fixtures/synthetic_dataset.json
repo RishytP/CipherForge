@@ -1,0 +1,1615 @@
+{
+  "version": "1.0",
+  "description": "Synthetic, fully fictional PII dataset for CipherForge evaluation. No real personal data. Gold spans are human-annotated PII in context.",
+  "matching_note": "A prediction matches a gold span when entity types are equal and the spans overlap. Exact-boundary matches are reported separately.",
+  "count": 73,
+  "examples": [
+    {
+      "id": "pf01",
+      "text": "Hello, my name is Rahul Sharma and my email address is rahul.sharma@example.com.",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 18,
+          "end": 30,
+          "text": "Rahul Sharma"
+        },
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 55,
+          "end": 79,
+          "text": "rahul.sharma@example.com"
+        }
+      ],
+      "categories": [
+        "properly_formatted"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "pf02",
+      "text": "Please contact Dr. Ananya Iyer at ananya.iyer@hospital.org or +91 98765 43210.",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 19,
+          "end": 30,
+          "text": "Ananya Iyer"
+        },
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 34,
+          "end": 58,
+          "text": "ananya.iyer@hospital.org"
+        },
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 62,
+          "end": 77,
+          "text": "+91 98765 43210"
+        }
+      ],
+      "categories": [
+        "properly_formatted",
+        "indian_phone"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "pf03",
+      "text": "You can reach Vikram at vikram.menon@acme.co.in or on his mobile 98450 12345.",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 14,
+          "end": 20,
+          "text": "Vikram"
+        },
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 24,
+          "end": 47,
+          "text": "vikram.menon@acme.co.in"
+        },
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 65,
+          "end": 76,
+          "text": "98450 12345"
+        }
+      ],
+      "categories": [
+        "properly_formatted",
+        "indian_phone"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "pf04",
+      "text": "My postal address is 14, Brigade Road, Bengaluru 560001.",
+      "entities": [
+        {
+          "entity_type": "ADDRESS",
+          "start": 21,
+          "end": 37,
+          "text": "14, Brigade Road"
+        },
+        {
+          "entity_type": "LOCATION",
+          "start": 39,
+          "end": 48,
+          "text": "Bengaluru"
+        },
+        {
+          "entity_type": "POSTAL_CODE",
+          "start": 49,
+          "end": 55,
+          "text": "560001"
+        }
+      ],
+      "categories": [
+        "properly_formatted",
+        "indian_address"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "mp01",
+      "text": "my name is priya and my number is 9876543210 call me anytime",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 11,
+          "end": 16,
+          "text": "priya"
+        },
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 34,
+          "end": 44,
+          "text": "9876543210"
+        }
+      ],
+      "categories": [
+        "missing_punctuation",
+        "indian_phone"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "mp02",
+      "text": "im arjun my email is arjun@gmail.com",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 3,
+          "end": 8,
+          "text": "arjun"
+        },
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 21,
+          "end": 36,
+          "text": "arjun@gmail.com"
+        }
+      ],
+      "categories": [
+        "missing_punctuation"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "mp03",
+      "text": "hi this is kavya pls note my no 9900112233 thanks",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 11,
+          "end": 16,
+          "text": "kavya"
+        },
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 32,
+          "end": 42,
+          "text": "9900112233"
+        }
+      ],
+      "categories": [
+        "missing_punctuation",
+        "abbreviations",
+        "indian_phone"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "mp04",
+      "text": "sending you the details now my address is 22 Park Street Kolkata 700016",
+      "entities": [
+        {
+          "entity_type": "ADDRESS",
+          "start": 42,
+          "end": 56,
+          "text": "22 Park Street"
+        },
+        {
+          "entity_type": "LOCATION",
+          "start": 57,
+          "end": 64,
+          "text": "Kolkata"
+        },
+        {
+          "entity_type": "POSTAL_CODE",
+          "start": 65,
+          "end": 71,
+          "text": "700016"
+        }
+      ],
+      "categories": [
+        "missing_punctuation"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "ep01",
+      "text": "OMG!!! my number is 98765-43210!!! call me!!!",
+      "entities": [
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 20,
+          "end": 31,
+          "text": "98765-43210"
+        }
+      ],
+      "categories": [
+        "excessive_punctuation",
+        "indian_phone"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "ep02",
+      "text": "hey!!! this is neha... reach me at neha@yahoo.co.in ...",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 15,
+          "end": 19,
+          "text": "neha"
+        },
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 35,
+          "end": 51,
+          "text": "neha@yahoo.co.in"
+        }
+      ],
+      "categories": [
+        "excessive_punctuation"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "ep03",
+      "text": "so...... my mail is rohit@@ no wait, rohit.k@gmail.com :)",
+      "entities": [
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 37,
+          "end": 54,
+          "text": "rohit.k@gmail.com"
+        }
+      ],
+      "categories": [
+        "excessive_punctuation"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "ab01",
+      "text": "btw my no is 9876543210, ping me",
+      "entities": [
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 13,
+          "end": 23,
+          "text": "9876543210"
+        }
+      ],
+      "categories": [
+        "abbreviations",
+        "informal",
+        "indian_phone"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "ab02",
+      "text": "my add is 24 MG road, near the old school",
+      "entities": [
+        {
+          "entity_type": "ADDRESS",
+          "start": 10,
+          "end": 20,
+          "text": "24 MG road"
+        }
+      ],
+      "categories": [
+        "abbreviations",
+        "informal",
+        "indian_address"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "ab03",
+      "text": "u can mail me at sid@outlook.com tbh",
+      "entities": [
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 17,
+          "end": 32,
+          "text": "sid@outlook.com"
+        }
+      ],
+      "categories": [
+        "abbreviations",
+        "informal"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "ab04",
+      "text": "ig my whatsapp is 9898989898 only",
+      "entities": [
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 18,
+          "end": 28,
+          "text": "9898989898"
+        }
+      ],
+      "categories": [
+        "abbreviations",
+        "informal",
+        "indian_phone"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "sp01",
+      "text": "my   number  is   98 765-43210",
+      "entities": [
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 18,
+          "end": 30,
+          "text": "98 765-43210"
+        }
+      ],
+      "categories": [
+        "inconsistent_spacing",
+        "indian_phone"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "sp02",
+      "text": "call me at 98765   43210",
+      "entities": [
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 11,
+          "end": 24,
+          "text": "98765   43210"
+        }
+      ],
+      "categories": [
+        "inconsistent_spacing",
+        "indian_phone"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "sp03",
+      "text": "email :  tanvi . rao @ example . com",
+      "entities": [
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 9,
+          "end": 36,
+          "text": "tanvi . rao @ example . com"
+        }
+      ],
+      "categories": [
+        "inconsistent_spacing"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "sp04",
+      "text": "my pin code is 5 6 0 0 0 1",
+      "entities": [
+        {
+          "entity_type": "POSTAL_CODE",
+          "start": 15,
+          "end": 26,
+          "text": "5 6 0 0 0 1"
+        }
+      ],
+      "categories": [
+        "inconsistent_spacing"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "ty01",
+      "text": "my nme is rahul and my emial is rahul@gmail.com",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 10,
+          "end": 15,
+          "text": "rahul"
+        },
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 32,
+          "end": 47,
+          "text": "rahul@gmail.com"
+        }
+      ],
+      "categories": [
+        "misspellings"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "ty02",
+      "text": "my numbr is 9876543210 plz cal",
+      "entities": [
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 12,
+          "end": 22,
+          "text": "9876543210"
+        }
+      ],
+      "categories": [
+        "misspellings",
+        "indian_phone"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "ty03",
+      "text": "my adress is 7 Lake View Road",
+      "entities": [
+        {
+          "entity_type": "ADDRESS",
+          "start": 13,
+          "end": 29,
+          "text": "7 Lake View Road"
+        }
+      ],
+      "categories": [
+        "misspellings",
+        "indian_address"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "in01",
+      "text": "hey so im rahul... u can reach me at rahul@gmail.com ig",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 10,
+          "end": 15,
+          "text": "rahul"
+        },
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 37,
+          "end": 52,
+          "text": "rahul@gmail.com"
+        }
+      ],
+      "categories": [
+        "informal",
+        "missing_punctuation"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "in02",
+      "text": "my no is 98 765-43210, call after 6",
+      "entities": [
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 9,
+          "end": 21,
+          "text": "98 765-43210"
+        }
+      ],
+      "categories": [
+        "informal",
+        "indian_phone"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "in03",
+      "text": "I told Ananya (the one from Delhi lol) to use my number",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 7,
+          "end": 13,
+          "text": "Ananya"
+        },
+        {
+          "entity_type": "LOCATION",
+          "start": 28,
+          "end": 33,
+          "text": "Delhi"
+        }
+      ],
+      "categories": [
+        "informal",
+        "ambiguous"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "in04",
+      "text": "lol ok so my email is... wait... it's dev.p@proton.me",
+      "entities": [
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 38,
+          "end": 53,
+          "text": "dev.p@proton.me"
+        }
+      ],
+      "categories": [
+        "informal",
+        "excessive_punctuation"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "in05",
+      "text": "yo my number changed, it's 9123456780 now, save it",
+      "entities": [
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 27,
+          "end": 37,
+          "text": "9123456780"
+        }
+      ],
+      "categories": [
+        "informal",
+        "indian_phone"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "mx01",
+      "text": "Hi, I'm Meera. I work at Infosys. Email: meera.k@infosys.com.",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 8,
+          "end": 13,
+          "text": "Meera"
+        },
+        {
+          "entity_type": "ORGANIZATION",
+          "start": 25,
+          "end": 32,
+          "text": "Infosys"
+        },
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 41,
+          "end": 60,
+          "text": "meera.k@infosys.com"
+        }
+      ],
+      "categories": [
+        "mixed_structures"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "mx02",
+      "text": "The document should go to Rahul, not me. His email is rahul@example.com",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 26,
+          "end": 31,
+          "text": "Rahul"
+        },
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 54,
+          "end": 71,
+          "text": "rahul@example.com"
+        }
+      ],
+      "categories": [
+        "mixed_structures",
+        "third_person"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "mx03",
+      "text": "Mr. Sharma said that Rahul should contact him, not me.",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 4,
+          "end": 10,
+          "text": "Sharma"
+        },
+        {
+          "entity_type": "PERSON",
+          "start": 21,
+          "end": 26,
+          "text": "Rahul"
+        }
+      ],
+      "categories": [
+        "mixed_structures",
+        "third_person",
+        "ambiguous"
+      ],
+      "notes": "Two distinct people; engine may under-detect the bare surname.",
+      "expect_uncertain": true,
+      "expect_none": false
+    },
+    {
+      "id": "mx04",
+      "text": "Send it to R.S. at the office, not my personal mail.",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 11,
+          "end": 15,
+          "text": "R.S."
+        }
+      ],
+      "categories": [
+        "mixed_structures",
+        "ambiguous"
+      ],
+      "notes": "Initial-style name; should be detected but flagged uncertain.",
+      "expect_uncertain": true,
+      "expect_none": false
+    },
+    {
+      "id": "am01",
+      "text": "Rahul is a character in this story.",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 0,
+          "end": 5,
+          "text": "Rahul"
+        }
+      ],
+      "categories": [
+        "ambiguous",
+        "fiction"
+      ],
+      "notes": "Fictional reference; span is a name but should be flagged uncertain.",
+      "expect_uncertain": true,
+      "expect_none": false
+    },
+    {
+      "id": "am02",
+      "text": "For example, say the user's name is John.",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 36,
+          "end": 40,
+          "text": "John"
+        }
+      ],
+      "categories": [
+        "ambiguous",
+        "fiction"
+      ],
+      "notes": "Illustrative placeholder name.",
+      "expect_uncertain": true,
+      "expect_none": false
+    },
+    {
+      "id": "am03",
+      "text": "My friend Rahul is coming over today.",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 10,
+          "end": 15,
+          "text": "Rahul"
+        }
+      ],
+      "categories": [
+        "ambiguous"
+      ],
+      "notes": "Real person, third-person framing.",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "am04",
+      "text": "The company Apple reported strong earnings.",
+      "entities": [
+        {
+          "entity_type": "ORGANIZATION",
+          "start": 12,
+          "end": 17,
+          "text": "Apple"
+        }
+      ],
+      "categories": [
+        "ambiguous",
+        "false_positive_risk"
+      ],
+      "notes": "Organisation, not a person.",
+      "expect_uncertain": true,
+      "expect_none": false
+    },
+    {
+      "id": "mu01",
+      "text": "Reach me at 9876543210 or sneha.rao@company.in, I live in Pune.",
+      "entities": [
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 12,
+          "end": 22,
+          "text": "9876543210"
+        },
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 26,
+          "end": 46,
+          "text": "sneha.rao@company.in"
+        },
+        {
+          "entity_type": "LOCATION",
+          "start": 58,
+          "end": 62,
+          "text": "Pune"
+        }
+      ],
+      "categories": [
+        "multiple_entities",
+        "indian_phone"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "mu02",
+      "text": "Hi I am Arjun Mehta, my PAN is ABCPE1234F and my Aadhaar is 234567890124.",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 8,
+          "end": 19,
+          "text": "Arjun Mehta"
+        },
+        {
+          "entity_type": "IN_PAN",
+          "start": 31,
+          "end": 41,
+          "text": "ABCPE1234F"
+        },
+        {
+          "entity_type": "IN_AADHAAR",
+          "start": 60,
+          "end": 72,
+          "text": "234567890124"
+        }
+      ],
+      "categories": [
+        "multiple_entities",
+        "indian_ids"
+      ],
+      "notes": "Synthetic PAN and Aadhaar-like numbers chosen to pass format checksums.",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "mu03",
+      "text": "Email aisha@corp.com or call 98200 11223, address 5 Hill Road Mumbai 400001.",
+      "entities": [
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 6,
+          "end": 20,
+          "text": "aisha@corp.com"
+        },
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 29,
+          "end": 40,
+          "text": "98200 11223"
+        },
+        {
+          "entity_type": "ADDRESS",
+          "start": 50,
+          "end": 61,
+          "text": "5 Hill Road"
+        },
+        {
+          "entity_type": "LOCATION",
+          "start": 62,
+          "end": 68,
+          "text": "Mumbai"
+        },
+        {
+          "entity_type": "POSTAL_CODE",
+          "start": 69,
+          "end": 75,
+          "text": "400001"
+        }
+      ],
+      "categories": [
+        "multiple_entities",
+        "indian_phone"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "mu04",
+      "text": "Server 10.0.0.5 belongs to ops; ping admin@internal.net if it is down.",
+      "entities": [
+        {
+          "entity_type": "IP_ADDRESS",
+          "start": 7,
+          "end": 15,
+          "text": "10.0.0.5"
+        },
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 37,
+          "end": 55,
+          "text": "admin@internal.net"
+        }
+      ],
+      "categories": [
+        "multiple_entities"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "re01",
+      "text": "Rahul told me his number is 9876543210. Rahul said call anytime.",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 0,
+          "end": 5,
+          "text": "Rahul"
+        },
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 28,
+          "end": 38,
+          "text": "9876543210"
+        },
+        {
+          "entity_type": "PERSON",
+          "start": 40,
+          "end": 45,
+          "text": "Rahul"
+        }
+      ],
+      "categories": [
+        "repeated_entities",
+        "indian_phone"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "re02",
+      "text": "Email me at a@b.com, again a@b.com, and once more a@b.com.",
+      "entities": [
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 12,
+          "end": 19,
+          "text": "a@b.com"
+        },
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 27,
+          "end": 34,
+          "text": "a@b.com"
+        },
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 50,
+          "end": 57,
+          "text": "a@b.com"
+        }
+      ],
+      "categories": [
+        "repeated_entities"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "re03",
+      "text": "Rahul Sharma and Rahul are the same person; Rahul's email is rahul.s@x.com.",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 0,
+          "end": 12,
+          "text": "Rahul Sharma"
+        },
+        {
+          "entity_type": "PERSON",
+          "start": 0,
+          "end": 5,
+          "text": "Rahul"
+        },
+        {
+          "entity_type": "PERSON",
+          "start": 17,
+          "end": 22,
+          "text": "Rahul"
+        },
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 61,
+          "end": 74,
+          "text": "rahul.s@x.com"
+        }
+      ],
+      "categories": [
+        "repeated_entities",
+        "coreference"
+      ],
+      "notes": "Shorter name should share the placeholder of the longer name.",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "fp01",
+      "text": "I bought 2 apples and 3 oranges from the market.",
+      "entities": [],
+      "categories": [
+        "false_positive"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": true
+    },
+    {
+      "id": "fp02",
+      "text": "The train 12951 leaves at 5 in the evening.",
+      "entities": [],
+      "categories": [
+        "false_positive"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": true
+    },
+    {
+      "id": "fp03",
+      "text": "Call 100 for police and 108 for an ambulance.",
+      "entities": [],
+      "categories": [
+        "false_positive"
+      ],
+      "notes": "Emergency numbers are not personal data.",
+      "expect_uncertain": false,
+      "expect_none": true
+    },
+    {
+      "id": "fp04",
+      "text": "Section 420 of the Indian Penal Code deals with cheating.",
+      "entities": [],
+      "categories": [
+        "false_positive"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": true
+    },
+    {
+      "id": "fp05",
+      "text": "The score was 98 out of 100 in the final exam.",
+      "entities": [],
+      "categories": [
+        "false_positive"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": true
+    },
+    {
+      "id": "fp06",
+      "text": "Order 4587 was shipped on Monday.",
+      "entities": [],
+      "categories": [
+        "false_positive"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": true
+    },
+    {
+      "id": "fp07",
+      "text": "The office is near the old school on MG Road.",
+      "entities": [],
+      "categories": [
+        "false_positive"
+      ],
+      "notes": "Generic location reference with no identifying detail.",
+      "expect_uncertain": false,
+      "expect_none": true
+    },
+    {
+      "id": "fp08",
+      "text": "I live near the old school on MG Road.",
+      "entities": [],
+      "categories": [
+        "false_positive",
+        "ambiguous"
+      ],
+      "notes": "Could contain location info but no specific address; borderline.",
+      "expect_uncertain": false,
+      "expect_none": true
+    },
+    {
+      "id": "id01",
+      "text": "Hi, I am Suresh Kumar and you can call me at 9876543210.",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 9,
+          "end": 21,
+          "text": "Suresh Kumar"
+        },
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 45,
+          "end": 55,
+          "text": "9876543210"
+        }
+      ],
+      "categories": [
+        "indian_names",
+        "indian_phone"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "id02",
+      "text": "Lakshmi Narayanan will present today; reach her at lakshmi.n@iitm.ac.in.",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 0,
+          "end": 17,
+          "text": "Lakshmi Narayanan"
+        },
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 51,
+          "end": 71,
+          "text": "lakshmi.n@iitm.ac.in"
+        }
+      ],
+      "categories": [
+        "indian_names"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "id03",
+      "text": "My name is Ramesh Iyer. My phone is 044-23456789.",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 11,
+          "end": 22,
+          "text": "Ramesh Iyer"
+        },
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 36,
+          "end": 48,
+          "text": "044-23456789"
+        }
+      ],
+      "categories": [
+        "indian_names",
+        "indian_phone"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "id04",
+      "text": "Sneha and her brother Karthik live in Chennai.",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 0,
+          "end": 5,
+          "text": "Sneha"
+        },
+        {
+          "entity_type": "PERSON",
+          "start": 22,
+          "end": 29,
+          "text": "Karthik"
+        },
+        {
+          "entity_type": "LOCATION",
+          "start": 38,
+          "end": 45,
+          "text": "Chennai"
+        }
+      ],
+      "categories": [
+        "indian_names",
+        "multiple_entities"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "id05",
+      "text": "My Aadhaar number is 2345 6789 0124 and I live in Jaipur.",
+      "entities": [
+        {
+          "entity_type": "IN_AADHAAR",
+          "start": 21,
+          "end": 35,
+          "text": "2345 6789 0124"
+        },
+        {
+          "entity_type": "LOCATION",
+          "start": 50,
+          "end": 56,
+          "text": "Jaipur"
+        }
+      ],
+      "categories": [
+        "indian_ids",
+        "indian_address"
+      ],
+      "notes": "Synthetic Aadhaar-like number chosen to pass the Verhoeff checksum.",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "id06",
+      "text": "PAN card ABCPE1234F belongs to me, my email is me@here.in.",
+      "entities": [
+        {
+          "entity_type": "IN_PAN",
+          "start": 9,
+          "end": 19,
+          "text": "ABCPE1234F"
+        },
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 47,
+          "end": 57,
+          "text": "me@here.in"
+        }
+      ],
+      "categories": [
+        "indian_ids"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "ph01",
+      "text": "reach me on +91-98765-43210",
+      "entities": [
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 12,
+          "end": 27,
+          "text": "+91-98765-43210"
+        }
+      ],
+      "categories": [
+        "indian_phone"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "ph02",
+      "text": "my mobile is 09876543210",
+      "entities": [
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 13,
+          "end": 24,
+          "text": "09876543210"
+        }
+      ],
+      "categories": [
+        "indian_phone"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "ph03",
+      "text": "landline 022-2345-6789 works best",
+      "entities": [
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 9,
+          "end": 22,
+          "text": "022-2345-6789"
+        }
+      ],
+      "categories": [
+        "indian_phone"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "ph04",
+      "text": "call 91 9876543210 tomorrow",
+      "entities": [
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 5,
+          "end": 18,
+          "text": "91 9876543210"
+        }
+      ],
+      "categories": [
+        "indian_phone"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "ph05",
+      "text": "whatsapp me on 9876543210 or 9876543211",
+      "entities": [
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 15,
+          "end": 25,
+          "text": "9876543210"
+        },
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 29,
+          "end": 39,
+          "text": "9876543211"
+        }
+      ],
+      "categories": [
+        "indian_phone",
+        "multiple_entities"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "ob01",
+      "text": "my mail is rahul (at) gmail (dot) com",
+      "entities": [
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 11,
+          "end": 37,
+          "text": "rahul (at) gmail (dot) com"
+        }
+      ],
+      "categories": [
+        "obfuscated"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "ob02",
+      "text": "write to me at first.last at gmail dot com",
+      "entities": [
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 15,
+          "end": 42,
+          "text": "first.last at gmail dot com"
+        }
+      ],
+      "categories": [
+        "obfuscated"
+      ],
+      "notes": "Spaced 'at'/'dot' obfuscation.",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "ob03",
+      "text": "my ip is 192.168.0.101",
+      "entities": [
+        {
+          "entity_type": "IP_ADDRESS",
+          "start": 9,
+          "end": 22,
+          "text": "192.168.0.101"
+        }
+      ],
+      "categories": [
+        "structured"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "ur01",
+      "text": "check my profile at https://example.com/users/rahul",
+      "entities": [
+        {
+          "entity_type": "URL",
+          "start": 20,
+          "end": 51,
+          "text": "https://example.com/users/rahul"
+        }
+      ],
+      "categories": [
+        "url"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "ur02",
+      "text": "docs are at http://10.1.2.3:8080/portal",
+      "entities": [
+        {
+          "entity_type": "URL",
+          "start": 12,
+          "end": 39,
+          "text": "http://10.1.2.3:8080/portal"
+        }
+      ],
+      "categories": [
+        "url"
+      ],
+      "notes": "The IP inside a URL is part of the URL and is not separately surfaced.",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "ng01",
+      "text": "That is not my number, mine is 9876543210.",
+      "entities": [
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 31,
+          "end": 41,
+          "text": "9876543210"
+        }
+      ],
+      "categories": [
+        "negation"
+      ],
+      "notes": "'not my number' refers to another number.",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "ng02",
+      "text": "Don't call 9876543210, that's my old number.",
+      "entities": [
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 11,
+          "end": 21,
+          "text": "9876543210"
+        }
+      ],
+      "categories": [
+        "negation",
+        "indian_phone"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "rl01",
+      "text": "so anyway my email is basically zoya.k@mail.com lol",
+      "entities": [
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 32,
+          "end": 47,
+          "text": "zoya.k@mail.com"
+        }
+      ],
+      "categories": [
+        "informal"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "rl02",
+      "text": "name: aditya, ph: 9833004455, city: Nagpur",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 6,
+          "end": 12,
+          "text": "aditya"
+        },
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 18,
+          "end": 28,
+          "text": "9833004455"
+        },
+        {
+          "entity_type": "LOCATION",
+          "start": 36,
+          "end": 42,
+          "text": "Nagpur"
+        }
+      ],
+      "categories": [
+        "informal",
+        "abbreviations",
+        "indian_phone"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "rl03",
+      "text": "hii im tanya frm delhi, numbr 9812345678, mail tanya@x.co",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 7,
+          "end": 12,
+          "text": "tanya"
+        },
+        {
+          "entity_type": "LOCATION",
+          "start": 17,
+          "end": 22,
+          "text": "delhi"
+        },
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 30,
+          "end": 40,
+          "text": "9812345678"
+        },
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 47,
+          "end": 57,
+          "text": "tanya@x.co"
+        }
+      ],
+      "categories": [
+        "informal",
+        "misspellings",
+        "multiple_entities",
+        "indian_phone"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "rl04",
+      "text": "pls share it with Deepak (the designer) not with me",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 18,
+          "end": 24,
+          "text": "Deepak"
+        }
+      ],
+      "categories": [
+        "informal",
+        "third_person"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    },
+    {
+      "id": "rl05",
+      "text": "my alternate contact is ritu@work.in / 9765432109",
+      "entities": [
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 24,
+          "end": 36,
+          "text": "ritu@work.in"
+        },
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 39,
+          "end": 49,
+          "text": "9765432109"
+        }
+      ],
+      "categories": [
+        "informal",
+        "indian_phone"
+      ],
+      "notes": "",
+      "expect_uncertain": false,
+      "expect_none": false
+    }
+  ]
+}
