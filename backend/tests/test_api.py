@@ -11,6 +11,33 @@ def test_health(client):
     assert res.json()["status"] == "ok"
 
 
+def test_root_serves_console(client):
+    res = client.get("/")
+    assert res.status_code == 200
+    assert "text/html" in res.headers["content-type"]
+    assert "CipherForge" in res.text
+
+
+def test_console_assets_are_served(client):
+    for path, needle in [("/app/styles.css", ".panel"), ("/app/app.js", "sanitized_text")]:
+        res = client.get(path)
+        assert res.status_code == 200, path
+        assert needle in res.text, path
+
+
+def test_console_does_not_expose_mapping(client):
+    # The console bundle must never *access* the backend's mapping field.
+    res = client.get("/app/app.js")
+    assert ".mapping" not in res.text
+    assert "body.mapping" not in res.text
+
+
+def test_openapi_still_available(client):
+    res = client.get("/openapi.json")
+    assert res.status_code == 200
+    assert "/api/v1/process" in res.json()["paths"]
+
+
 def test_analyze_returns_entities_with_positions(client):
     res = client.post(
         "/api/v1/analyze",

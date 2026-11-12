@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CipherForge — Privacy Detection Console</title>
+  <link rel="stylesheet" href="/app/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">◈</span>
+      <div>
+        <h1>CipherForge</h1>
+        <p class="tagline">Context-aware PII detection &amp; anonymisation</p>
+      </div>
+    </div>
+    <div class="status" id="status" data-state="unknown">
+      <span class="dot" aria-hidden="true"></span>
+      <span id="status-text">checking backend…</span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- ---------------- Input ---------------- -->
+    <section class="panel input-panel" aria-labelledby="input-heading">
+      <div class="panel-head">
+        <h2 id="input-heading">Input</h2>
+        <span class="counter" id="char-count">0 chars</span>
+      </div>
+
+      <textarea
+        id="text-input"
+        spellcheck="false"
+        placeholder="Paste or type text here, e.g.&#10;hey so im rahul... u can reach me at rahul@gmail.com ig"
+        aria-label="Text to analyse"
+      ></textarea>
+
+      <div class="controls">
+        <label class="field">
+          <span>Endpoint</span>
+          <select id="mode">
+            <option value="process" selected>/process — full pipeline</option>
+            <option value="analyze">/analyze — detect only</option>
+            <option value="anonymize">/anonymize — sanitise</option>
+          </select>
+        </label>
+
+        <label class="field" id="strategy-field">
+          <span>Strategy</span>
+          <select id="strategy">
+            <option value="placeholder" selected>placeholder</option>
+            <option value="redact">redact</option>
+            <option value="mask">mask</option>
+            <option value="hash">hash</option>
+          </select>
+        </label>
+
+        <button id="run" class="primary">Sanitise</button>
+      </div>
+
+      <div class="samples">
+        <span class="samples-label">Try a messy example:</span>
+        <div class="chips" id="samples"></div>
+      </div>
+    </section>
+
+    <!-- ---------------- Output ---------------- -->
+    <section class="panel output-panel" aria-labelledby="output-heading">
+      <div class="panel-head">
+        <h2 id="output-heading">Result</h2>
+        <span class="counter" id="latency"></span>
+      </div>
+
+      <div id="error" class="error" hidden role="alert"></div>
+
+      <div id="empty" class="empty">
+        <p>Nothing analysed yet.</p>
+        <p class="muted">Pick an example or type your own, then hit <strong>Sanitise</strong>.</p>
+      </div>
+
+      <div id="results" hidden>
+        <div class="block">
+          <h3>Sanitised text</h3>
+          <pre id="sanitized" class="sanitized"></pre>
+        </div>
+
+        <div class="stats" id="stats"></div>
+
+        <div class="block">
+          <h3>Detections <span class="muted" id="det-count"></span></h3>
+          <div class="legend">
+            <span class="key"><i class="swatch high"></i> confident</span>
+            <span class="key"><i class="swatch review"></i> needs review</span>
+            <span class="key"><i class="swatch kept"></i> kept verbatim</span>
+          </div>
+          <ul class="entities" id="entities"></ul>
+        </div>
+
+        <details class="block" id="explain-wrap">
+          <summary>Pipeline explanation</summary>
+          <ol class="steps" id="steps"></ol>
+        </details>
+      </div>
+
+      <p class="disclaimer" id="disclaimer"></p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>CipherForge <span id="version">…</span></span>
+    <span class="muted">Detection runs locally. Text is not sent to any external model and is not stored.</span>
+  </footer>
+
+  <script src="/app/app.js"></script>
+</body>
+</html>

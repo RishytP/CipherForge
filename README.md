@@ -30,8 +30,9 @@ implemented, running, and tested.
 | Anonymisation with consistent placeholders | ✅ working |
 | Synthetic dataset (≥ 50 examples) | ✅ 73 examples, 114 gold spans |
 | Precision / recall / F1 harness | ✅ measured (see below) |
-| pytest suite | ✅ 65 tests passing |
-| Frontend integration | ⏳ not started (directory scaffolded) |
+| pytest suite | ✅ 69 tests passing |
+| Test console (frontend) | ✅ working, served at `/` |
+| Next.js frontend | ⏳ deferred (static console covers testing) |
 | External model routing | ⏳ out of scope for this milestone |
 
 **Measured on the synthetic dataset** (`python -m tests.evaluation`):
@@ -193,6 +194,26 @@ uvicorn app.main:app --reload --port 8000
 ```
 
 Then open <http://127.0.0.1:8000/docs>.
+
+### Test console (frontend)
+
+A dependency-free web console is served by the backend itself at the root URL:
+
+**<http://127.0.0.1:8000/>**
+
+It lets you type or pick messy sample text, choose the endpoint and strategy,
+and see the sanitised output, each detection with its confidence and evidence,
+and the pipeline explanation. It is served from the same origin as the API, so
+there is no CORS setup, no build step and no `npm install` required.
+
+It lives in `frontend/` as three static files (`index.html`, `styles.css`,
+`app.js`) mounted by the backend at `/app`. The console only ever renders the
+*sanitised* text returned by the API; it never receives or reconstructs the
+original-to-placeholder mapping.
+
+> A separate Next.js frontend remains the longer-term plan for Milestone 5. The
+> static console is what makes the backend testable right now without pulling in
+> a JS toolchain.
 
 ### Tests
 

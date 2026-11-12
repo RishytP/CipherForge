@@ -21,7 +21,9 @@ handling **informal, irregular human text**, not clean formatted text.
   builder.
 - `docs/LIMITATIONS.md` — the honest account of what fails. Update it whenever
   you change detection or anonymisation behaviour.
-- `frontend/` — reserved, not started.
+- `frontend/` — dependency-free test console (`index.html`, `styles.css`,
+  `app.js`). Served by the backend at `/`, assets at `/app`. No build step, no
+  npm. It must only render sanitised text and must never read the mapping.
 
 ## Commands
 
