@@ -15,25 +15,39 @@ handling **informal, irregular human text**, not clean formatted text.
     each own one layer. Keep it that way: no layer logic in the orchestrator.
   - `anonymization/` — strictly separate from detection. Consumes detected
     spans only; never sees raw text with no detections.
+  - `api/routes.py` — the core public endpoints (`/analyze`, `/anonymize`,
+    `/process`). Do not change their contract.
+  - `api/workbench.py` — developer-workbench endpoints (`/api/v1/workbench/*`).
+    Additive only.
+  - `feedback/store.py` — JSON feedback queue + versioned datasets. Feedback is
+    queued for human review; it must **never** alter detection automatically.
   - `models/schemas.py` — the public API contract.
+  - `models/workbench_schemas.py` — workbench + feedback contract.
   - `security/validation.py` — input validation and log redaction.
+- `backend/data/feedback/` — runtime feedback queue (git-ignored). Plain JSON,
+  no database.
 - `backend/tests/` — pytest suite plus the evaluation harness and dataset
   builder.
 - `docs/LIMITATIONS.md` — the honest account of what fails. Update it whenever
   you change detection or anonymisation behaviour.
-- `frontend/` — dependency-free test console (`index.html`, `styles.css`,
-  `app.js`). Served by the backend at `/`, assets at `/app`. No build step, no
-  npm. It must only render sanitised text and must never read the mapping.
+- `frontend/workbench/` — the CipherForge **Workbench**, served by the backend
+  at `/`, assets at `/app/workbench`. Dependency-free ES modules under
+  `js/` (one module per view). No build step, no npm. It must only render
+  sanitised text and must never read the mapping.
+- `frontend/` (root files) — the original single-page console, now served at
+  `/legacy`, assets at `/app`. Kept for reference; new work goes in the
+  workbench.
 
 ## Commands
 
 ```bash
 cd backend
 source ../.venv/bin/activate
-python -m pytest -q                     # 65 tests
+python -m pytest -q                     # 80 tests
 python -m tests.evaluation              # P/R/F1 report
 python tests/fixtures/build_dataset.py  # regenerate dataset (rewrites JSON)
 uvicorn app.main:app --reload --port 8000
+# then open http://127.0.0.1:8000/  (workbench) or /legacy (old console)
 ```
 
 ## Conventions and invariants
@@ -54,6 +68,13 @@ uvicorn app.main:app --reload --port 8000
   the recognisers. Never present its numbers as real-world accuracy. See
   `docs/LIMITATIONS.md`.
 - Adding a recogniser means adding a test **and** at least one dataset example.
+- **Workbench feedback never changes detection.** It is queued for review and,
+  when accepted, written to a versioned evaluation dataset. Do not wire feedback
+  into thresholds or recognisers automatically.
+- **Feedback is privacy-first.** Raw text is stored only when
+  `CIPHERFORGE_FEEDBACK_STORE_RAW_TEXT=true`; default is the sanitised snippet.
+- **No command execution from requests.** The workbench evaluation endpoint
+  calls `tests.evaluation` by Python import; never shell out or accept paths.
 
 ## Environment notes
 

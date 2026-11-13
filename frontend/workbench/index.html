@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CipherForge Workbench</title>
+  <link rel="stylesheet" href="/app/workbench/styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <!-- ---------------- sidebar ---------------- -->
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">◈</span>
+        <div class="brand-text">
+          <strong>CipherForge</strong>
+          <span>Workbench</span>
+        </div>
+      </div>
+
+      <nav class="nav" id="nav" aria-label="Sections">
+        <button class="nav-item" data-view="overview"><span class="ico">▤</span> Overview</button>
+        <button class="nav-item" data-view="chat"><span class="ico">▤</span> Secure Chat</button>
+        <button class="nav-item" data-view="testlab"><span class="ico">▤</span> Test Lab</button>
+        <button class="nav-item" data-view="evaluation"><span class="ico">▤</span> Evaluation</button>
+        <button class="nav-item" data-view="feedback"><span class="ico">▤</span> Feedback</button>
+        <button class="nav-item" data-view="about"><span class="ico">▤</span> About</button>
+      </nav>
+
+      <div class="sidebar-foot">
+        <div class="health" id="health" data-state="unknown">
+          <span class="dot"></span>
+          <span id="health-text">checking…</span>
+        </div>
+        <span class="ver" id="engine-version">…</span>
+        <span class="dev-badge">dev / evaluation tool</span>
+      </div>
+    </aside>
+
+    <!-- ---------------- main ---------------- -->
+    <main class="main">
+      <header class="topbar">
+        <h1 id="view-title">Overview</h1>
+        <p id="view-sub" class="sub"></p>
+      </header>
+      <div class="view-host" id="view-host" aria-live="polite"></div>
+    </main>
+  </div>
+
+  <!-- toast host -->
+  <div class="toasts" id="toasts" aria-live="polite" aria-atomic="true"></div>
+
+  <script type="module" src="/app/workbench/js/app.js"></script>
+</body>
+</html>

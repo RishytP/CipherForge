@@ -13,19 +13,21 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.api.routes import router
+from app.api.workbench import router as workbench_router
 from app.config import get_settings
 
 settings = get_settings()
 
-# The console is served from the same origin as the API, so no CORS is needed
-# for normal use. CORS is still enabled for the local Next.js dev server and
-# the work-host ports, for anyone running a separate frontend during dev.
+# Static assets served by the backend. Two UIs live under here:
+#   frontend/workbench/  -- the developer workbench (served at /)
+#   frontend/            -- the original single-page console (served at /legacy)
+WORKBENCH_DIR = Path(__file__).resolve().parents[2] / "frontend" / "workbench"
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
 
 logging.basicConfig(
@@ -59,6 +61,7 @@ app.add_middleware(
 )
 
 app.include_router(router)
+app.include_router(workbench_router)
 
 
 @app.exception_handler(Exception)
@@ -78,14 +81,20 @@ def health() -> dict:
 
 @app.get("/", tags=["ops"], include_in_schema=False)
 def root():
-    """Serve the test console, or fall back to an API description."""
-    index = FRONTEND_DIR / "index.html"
+    """Serve the developer workbench, falling back to a JSON description."""
+    index = WORKBENCH_DIR / "index.html"
     if index.is_file():
         return FileResponse(index)
     return {
         "name": settings.app_name,
         "version": settings.engine_version,
-        "endpoints": ["/api/v1/analyze", "/api/v1/anonymize", "/api/v1/process"],
+        "ui": "not built",
+        "endpoints": [
+            "/api/v1/analyze",
+            "/api/v1/anonymize",
+            "/api/v1/process",
+            "/api/v1/workbench/system",
+        ],
         "disclaimer": (
             "CipherForge reduces exposure of detected sensitive data but does "
             "not guarantee complete anonymisation."
@@ -93,7 +102,18 @@ def root():
     }
 
 
-# Static assets for the console (styles.css, app.js). Mounted last so it can
-# never shadow an API route.
+@app.get("/legacy", tags=["ops"], include_in_schema=False)
+def legacy_console():
+    """Serve the original single-page console, kept for convenience."""
+    index = FRONTEND_DIR / "index.html"
+    if index.is_file():
+        return FileResponse(index)
+    raise HTTPException(status_code=404, detail="legacy console not found")
+
+
+# Static assets. Registered last so they can never shadow an API route.
+# The workbench lives at /app/workbench/*, the legacy console at /app/*.
+if WORKBENCH_DIR.is_dir():
+    app.mount("/app/workbench", StaticFiles(directory=str(WORKBENCH_DIR)), name="workbench")
 if FRONTEND_DIR.is_dir():
     app.mount("/app", StaticFiles(directory=str(FRONTEND_DIR)), name="app")

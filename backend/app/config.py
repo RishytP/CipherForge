@@ -61,6 +61,18 @@ class Settings(BaseSettings):
     # --- Privacy / logging ---
     log_raw_text: bool = False
 
+    # --- Developer workbench ---
+    # The workbench is a development/evaluation tool, not a production surface.
+    # It exposes read-only system/evaluation endpoints and a feedback queue.
+    # Disable it to reduce the attack surface in a production deployment.
+    workbench_enabled: bool = True
+    # Feedback entries capture raw text only when this is explicitly enabled.
+    # Off by default: feedback defaults to storing a sanitised snippet and
+    # offsets, never real personal information.
+    feedback_store_raw_text: bool = False
+    # Directory for the pending feedback queue and versioned feedback datasets.
+    feedback_dir: str = "backend/data/feedback"
+
 
 @lru_cache
 def get_settings() -> Settings:

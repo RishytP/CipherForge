@@ -8,7 +8,7 @@ test suite, or a known property of the components used.
 ## How to read the metrics
 
 The evaluation harness (`python -m tests.evaluation`) reports
-`P=0.983  R=0.983  F1=0.983` over 73 synthetic examples with 114 gold spans.
+`P=0.983  R=0.983  F1=0.983` over 73 synthetic examples with 115 gold spans.
 
 **This is not a claim of real-world accuracy.** The dataset and the recognisers
 were written by the same author in the same session, which biases the numbers
