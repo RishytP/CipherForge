@@ -28,11 +28,12 @@ implemented, running, and tested.
 | Multi-layer PII detection (A–D) | ✅ working |
 | Custom recognisers | ✅ 9 recognisers |
 | Anonymisation with consistent placeholders | ✅ working |
-| Synthetic dataset (≥ 50 examples) | ✅ 73 examples, 114 gold spans |
+| Synthetic dataset (≥ 50 examples) | ✅ 73 examples, 115 gold spans |
 | Precision / recall / F1 harness | ✅ measured (see below) |
-| pytest suite | ✅ 69 tests passing |
-| Test console (frontend) | ✅ working, served at `/` |
-| Next.js frontend | ⏳ deferred (static console covers testing) |
+| pytest suite | ✅ 80 tests passing |
+| Test console (frontend) | ✅ working, served at `/legacy` |
+| Developer Workbench (frontend) | ✅ working, served at `/` |
+| Next.js frontend | ⏳ not adopted (see decision below) |
 | External model routing | ⏳ out of scope for this milestone |
 
 **Measured on the synthetic dataset** (`python -m tests.evaluation`):
@@ -178,6 +179,25 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/process \
   -d '{"text":"Hey, I am Meera. Reach me at meera@example.com or 9876543210."}'
 ```
 
+### Workbench endpoints (`/api/v1/workbench/...`)
+
+Powers the developer UI. Read-only except for the feedback queue. Disable the
+whole surface with `CIPHERFORGE_WORKBENCH_ENABLED=false`.
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/system` | Engine version, thresholds, dataset counts, layers, limitations. |
+| `GET` | `/evaluation` | Runs the evaluation harness in-process (cached; `?refresh=true` to re-run). |
+| `GET` | `/dataset` | The synthetic dataset with gold spans. |
+| `GET` | `/feedback` | Pending feedback entries + written dataset versions. |
+| `POST` | `/feedback` | Queue a feedback entry for review. |
+| `DELETE` | `/feedback/{id}` | Discard a pending entry. |
+| `POST` | `/feedback/accept` | Write reviewed entries to a new dataset version. |
+
+The evaluation endpoint calls `tests.evaluation` **by direct Python import**. It
+never shells out and never accepts a command, path, or argument from the request
+body, so it is not a command-execution surface.
+
 ---
 
 ## Running locally
@@ -195,31 +215,78 @@ uvicorn app.main:app --reload --port 8000
 
 Then open <http://127.0.0.1:8000/docs>.
 
-### Test console (frontend)
+### Developer Workbench (frontend)
 
-A dependency-free web console is served by the backend itself at the root URL:
+The primary UI is now the **CipherForge Workbench**, an interactive tool for
+developers and reviewers, served by the backend at the root URL:
 
 **<http://127.0.0.1:8000/>**
 
-It lets you type or pick messy sample text, choose the endpoint and strategy,
-and see the sanitised output, each detection with its confidence and evidence,
-and the pipeline explanation. It is served from the same origin as the API, so
-there is no CORS setup, no build step and no `npm install` required.
+It is a development and evaluation interface, **not** a production chatbot. It
+has six views:
 
-It lives in `frontend/` as three static files (`index.html`, `styles.css`,
-`app.js`) mounted by the backend at `/app`. The console only ever renders the
-*sanitised* text returned by the API; it never receives or reconstructs the
+| View | What it does |
+| --- | --- |
+| **Overview** | Engine status, dataset counts, latest evaluation, known limitations. |
+| **Secure Chat** | Type a message exactly as written; inspect detections and sanitised output. |
+| **Test Lab** | Run dataset examples through the pipeline and compare predictions to gold labels (a live pass/partial/fail verdict per example). |
+| **Evaluation** | Precision / recall / F1 overall, by entity type and by category, with the false positives and false negatives listed. |
+| **Feedback** | Review queued corrections; accept them into a versioned dataset or discard them. |
+| **About** | Versions, thresholds, architecture, and what the tool is not. |
+
+In **Secure Chat**, typing a message and pressing *Process message* sends **the
+raw text exactly as typed** to `POST /api/v1/process`. The view then shows the
+original text with each detected span highlighted and clickable, alongside the
+sanitised output with `[TYPE_n]` placeholders. Clicking an entity in the
+inspector highlights its exact characters in the original. Every entity card
+shows the backend's own confidence score, discrete level, detection method, and
+contextual evidence — none of which the UI computes.
+
+The workbench only ever renders the **sanitised** output and the metadata the
+API does not consider sensitive. It never receives or reconstructs the
 original-to-placeholder mapping.
 
-> A separate Next.js frontend remains the longer-term plan for Milestone 5. The
-> static console is what makes the backend testable right now without pulling in
-> a JS toolchain.
+#### Feedback defaults are privacy-first
+
+Submitting feedback queues an entry for **human review**. It does **not** change
+detection rules, entity types, or confidence thresholds — ever, automatically.
+Accepting an entry writes it to a versioned *evaluation dataset* for a later
+human merge.
+
+By default feedback stores the **sanitised snippet and offsets**, not raw text.
+Raw-text storage is opt-in via `CIPHERFORGE_FEEDBACK_STORE_RAW_TEXT=true`. The
+feedback queue lives in `backend/data/feedback/` (git-ignored) as plain JSON —
+no database.
+
+#### Why not Next.js
+
+The brief listed Next.js first for the frontend. After inspecting the existing
+project, the workbench was built as dependency-free static ES modules served by
+the backend, for concrete reasons:
+
+* The existing console was already dependency-free and served same-origin; there
+  was no build step, no `npm install`, and no CORS to manage.
+* `npm install next` pulls roughly 330 MB into `node_modules`. For an internal
+  developer tool that renders a handful of panels, that cost is not justified.
+* Serving the UI from the API's own origin means the workbench can never drift
+  from the API contract, and there is one process to run.
+
+The code is organised as small ES modules under `frontend/workbench/js/`
+(`api.js`, `ui.js`, `entity-inspector.js` and one module per view), so porting to
+Next.js later is a mechanical move of view logic into React components. This is a
+deliberate trade-off, documented rather than hidden.
+
+### Legacy test console
+
+The original single-page console is still available at **`/legacy`** (assets at
+`/app/*`). It is kept because it is small, working, and covered by tests. New
+work goes into the Workbench.
 
 ### Tests
 
 ```bash
 cd backend
-python -m pytest -q                    # full suite (65 tests)
+python -m pytest -q                    # full suite (80 tests)
 python -m tests.evaluation             # precision / recall / F1 report
 python tests/fixtures/build_dataset.py # regenerate the synthetic dataset
 ```
@@ -234,6 +301,7 @@ backend/
     main.py                 FastAPI app, CORS, error handling, /health
     config.py               all tunables (thresholds, limits, strategies)
     api/routes.py           /analyze, /anonymize, /process
+    api/workbench.py        /api/v1/workbench/* (system, evaluation, dataset, feedback)
     detection/
       analyzer.py           orchestrates layers A–D
       patterns.py           Layer A recognisers + gazetteer
@@ -244,19 +312,26 @@ backend/
       engine.py             strategies + span-safe replacement
       placeholders.py       identity registry + placeholder generation
     models/schemas.py       Pydantic request/response contract
+    models/workbench_schemas.py  workbench + feedback contract
+    feedback/store.py       JSON feedback queue + versioned datasets
     security/validation.py  input validation + log redaction
   tests/
     test_detection.py       Layer A–D behaviour
     test_anonymization.py   placeholders, strategies, consistency
     test_api.py             endpoint contract + input validation
     test_dataset.py         dataset integrity + metric regression floors
+    test_workbench.py       workbench endpoints + feedback lifecycle
     evaluation.py           P/R/F1 harness
     fixtures/
       build_dataset.py      generates the dataset
       synthetic_dataset.json
 docs/
   LIMITATIONS.md            honest account of what fails and why
-frontend/                   (not started — reserved for Milestone 5)
+frontend/
+  workbench/                developer workbench (served at /)
+    index.html, styles.css
+    js/                     api.js, ui.js, entity-inspector.js, one module per view
+  index.html, styles.css, app.js   legacy console (served at /legacy)
 ```
 
 ---
@@ -267,12 +342,17 @@ frontend/                   (not started — reserved for Milestone 5)
   only on error paths, via `app.security.validation.redact_for_log`.
 * **No outbound network calls.** This milestone never sends text to an external
   model.
-* **No persistence.** Nothing is written to a database; the placeholder mapping
-  lives only for the duration of a request.
+* **No database, and no request persistence.** The placeholder mapping lives
+  only for the duration of a request. Nothing about a request is stored — the
+  only thing written to disk is the **workbench feedback queue**, and that is
+  opt-in, human-reviewed, and stores the sanitised snippet and offsets rather
+  than raw text by default.
 * **Input validation.** Type checks, a configurable maximum length, and blank
   input rejection. Oversized or malformed input returns `422`.
 * **No hard-coded credentials.** Configuration is environment-driven via
   `CIPHERFORGE_*` variables and nothing else.
+* **No command-execution surface.** The workbench evaluation endpoint calls the
+  harness by Python import; it accepts no path or command from the request.
 * **Honest error handling.** Unexpected errors return a generic 500 with no
   internals and no input echoed back.
 

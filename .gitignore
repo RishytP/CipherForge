@@ -28,3 +28,6 @@ node_modules/
 .next/
 out/
 *.tsbuildinfo
+
+# Workbench feedback data (runtime-generated, may contain reviewing notes)
+backend/data/feedback/
