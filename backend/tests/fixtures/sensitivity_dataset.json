@@ -1,0 +1,600 @@
+{
+  "version": "1.0",
+  "description": "Sensitivity-classification regression set. Every span is synthetic. expected_sensitivity is the correct PROTECT/KEEP/REVIEW decision in context, not just the entity type.",
+  "count": 31,
+  "examples": [
+    {
+      "id": "rq01",
+      "text": "How do I get a 1 crore package at Microsoft?",
+      "entities": [
+        {
+          "entity_type": "ORGANIZATION",
+          "start": 34,
+          "end": 43,
+          "text": "Microsoft",
+          "expected_sensitivity": "KEEP",
+          "note": "Public company; a salary question, not personal data."
+        }
+      ],
+      "categories": [
+        "required",
+        "org_public"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "rq02",
+      "text": "I want to work at Google.",
+      "entities": [
+        {
+          "entity_type": "ORGANIZATION",
+          "start": 18,
+          "end": 24,
+          "text": "Google",
+          "expected_sensitivity": "KEEP",
+          "note": "Public company; career intent, not personal data."
+        }
+      ],
+      "categories": [
+        "required",
+        "org_public"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "rq03",
+      "text": "Microsoft announced a new product.",
+      "entities": [
+        {
+          "entity_type": "ORGANIZATION",
+          "start": 0,
+          "end": 9,
+          "text": "Microsoft",
+          "expected_sensitivity": "KEEP",
+          "note": "Public company as a news subject."
+        }
+      ],
+      "categories": [
+        "required",
+        "org_public"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "rq04",
+      "text": "My friend studies at IIT Delhi.",
+      "entities": [
+        {
+          "entity_type": "LOCATION",
+          "start": 21,
+          "end": 30,
+          "text": "IIT Delhi",
+          "expected_sensitivity": "KEEP",
+          "note": "Public institution; third-party reference."
+        }
+      ],
+      "categories": [
+        "required",
+        "location_public"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "rq05",
+      "text": "I live in Delhi.",
+      "entities": [
+        {
+          "entity_type": "LOCATION",
+          "start": 10,
+          "end": 15,
+          "text": "Delhi",
+          "expected_sensitivity": "PROTECT",
+          "note": "Speaker's own location via 'I live in'."
+        }
+      ],
+      "categories": [
+        "required",
+        "location_personal"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "rq06",
+      "text": "My email is rahul@example.com.",
+      "entities": [
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 12,
+          "end": 29,
+          "text": "rahul@example.com",
+          "expected_sensitivity": "PROTECT",
+          "note": "Contact detail of the speaker."
+        }
+      ],
+      "categories": [
+        "required",
+        "contact"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "rq07",
+      "text": "My password is Microsoft123.",
+      "entities": [
+        {
+          "entity_type": "CREDENTIAL",
+          "start": 15,
+          "end": 27,
+          "text": "Microsoft123",
+          "expected_sensitivity": "PROTECT",
+          "note": "Credential value; protect the secret, not the word."
+        }
+      ],
+      "categories": [
+        "required",
+        "credential"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "rq08",
+      "text": "Rahul Sharma works at Microsoft.",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 0,
+          "end": 12,
+          "text": "Rahul Sharma",
+          "expected_sensitivity": "PROTECT",
+          "note": "Named individual tied to the speaker's circle."
+        },
+        {
+          "entity_type": "ORGANIZATION",
+          "start": 22,
+          "end": 31,
+          "text": "Microsoft",
+          "expected_sensitivity": "KEEP",
+          "note": "Public employer name."
+        }
+      ],
+      "categories": [
+        "required",
+        "mixed"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "rq09",
+      "text": "I work for an undisclosed client.",
+      "entities": [],
+      "categories": [
+        "required",
+        "no_entity"
+      ],
+      "notes": "No named entity to classify. The engine must not invent or anonymise anything here; 'undisclosed client' is already private."
+    },
+    {
+      "id": "rq10",
+      "text": "Send my personal records to Microsoft.",
+      "entities": [
+        {
+          "entity_type": "ORGANIZATION",
+          "start": 28,
+          "end": 37,
+          "text": "Microsoft",
+          "expected_sensitivity": "PROTECT",
+          "note": "Recipient in a personal-data transfer frame."
+        }
+      ],
+      "categories": [
+        "required",
+        "personal_transfer"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "in01",
+      "text": "hey so im rahul, ping me at 98 765-43210",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 10,
+          "end": 15,
+          "text": "rahul",
+          "expected_sensitivity": "PROTECT",
+          "note": "Self-introduction."
+        },
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 28,
+          "end": 40,
+          "text": "98 765-43210",
+          "expected_sensitivity": "PROTECT",
+          "note": "Contact number."
+        }
+      ],
+      "categories": [
+        "informal",
+        "contact"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "in02",
+      "text": "my no is 98765 43210, call after 6",
+      "entities": [
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 9,
+          "end": 20,
+          "text": "98765 43210",
+          "expected_sensitivity": "PROTECT",
+          "note": "Contact number."
+        }
+      ],
+      "categories": [
+        "informal",
+        "contact"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "in03",
+      "text": "i live in pune and work at wipro",
+      "entities": [
+        {
+          "entity_type": "LOCATION",
+          "start": 10,
+          "end": 14,
+          "text": "pune",
+          "expected_sensitivity": "PROTECT",
+          "note": "Speaker's own location."
+        },
+        {
+          "entity_type": "ORGANIZATION",
+          "start": 27,
+          "end": 32,
+          "text": "wipro",
+          "expected_sensitivity": "KEEP",
+          "note": "Public employer name."
+        }
+      ],
+      "categories": [
+        "informal",
+        "lowercase"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "in04",
+      "text": "lol my email is... meera.k@mail.com ig",
+      "entities": [
+        {
+          "entity_type": "EMAIL_ADDRESS",
+          "start": 19,
+          "end": 35,
+          "text": "meera.k@mail.com",
+          "expected_sensitivity": "PROTECT",
+          "note": "Contact detail."
+        }
+      ],
+      "categories": [
+        "informal",
+        "contact"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "in05",
+      "text": "gimme a call on 98765   43210!!",
+      "entities": [
+        {
+          "entity_type": "PHONE_NUMBER",
+          "start": 16,
+          "end": 29,
+          "text": "98765   43210",
+          "expected_sensitivity": "PROTECT",
+          "note": "Contact number, odd spacing."
+        }
+      ],
+      "categories": [
+        "informal",
+        "contact"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "cr01",
+      "text": "my api key: sk-abcd1234efgh",
+      "entities": [
+        {
+          "entity_type": "CREDENTIAL",
+          "start": 12,
+          "end": 27,
+          "text": "sk-abcd1234efgh",
+          "expected_sensitivity": "PROTECT",
+          "note": "API secret."
+        }
+      ],
+      "categories": [
+        "credential"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "cr02",
+      "text": "the otp is 482913 dont share it",
+      "entities": [
+        {
+          "entity_type": "CREDENTIAL",
+          "start": 11,
+          "end": 17,
+          "text": "482913",
+          "expected_sensitivity": "PROTECT",
+          "note": "One-time code."
+        }
+      ],
+      "categories": [
+        "credential"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "id01",
+      "text": "my aadhaar is 2345 6789 0124",
+      "entities": [
+        {
+          "entity_type": "IN_AADHAAR",
+          "start": 14,
+          "end": 28,
+          "text": "2345 6789 0124",
+          "expected_sensitivity": "PROTECT",
+          "note": "Government identity number."
+        }
+      ],
+      "categories": [
+        "indian_ids"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "id02",
+      "text": "PAN ABCPE1234F belongs to me",
+      "entities": [
+        {
+          "entity_type": "IN_PAN",
+          "start": 4,
+          "end": 14,
+          "text": "ABCPE1234F",
+          "expected_sensitivity": "PROTECT",
+          "note": "Government identity number."
+        }
+      ],
+      "categories": [
+        "indian_ids"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "or01",
+      "text": "The company Apple reported strong earnings.",
+      "entities": [
+        {
+          "entity_type": "ORGANIZATION",
+          "start": 12,
+          "end": 17,
+          "text": "Apple",
+          "expected_sensitivity": "KEEP",
+          "note": "Public company as a news subject."
+        }
+      ],
+      "categories": [
+        "org_public"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "or02",
+      "text": "Infosys hires thousands of engineers every year.",
+      "entities": [
+        {
+          "entity_type": "ORGANIZATION",
+          "start": 0,
+          "end": 7,
+          "text": "Infosys",
+          "expected_sensitivity": "KEEP",
+          "note": "Public company."
+        }
+      ],
+      "categories": [
+        "org_public"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "or03",
+      "text": "Acme Corp won the contract last year.",
+      "entities": [
+        {
+          "entity_type": "ORGANIZATION",
+          "start": 0,
+          "end": 9,
+          "text": "Acme Corp",
+          "expected_sensitivity": "KEEP",
+          "note": "Unknown vendor; not personal data."
+        }
+      ],
+      "categories": [
+        "org_public",
+        "informal"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "or04",
+      "text": "Send the invoice to Acme Corp.",
+      "entities": [
+        {
+          "entity_type": "ORGANIZATION",
+          "start": 20,
+          "end": 29,
+          "text": "Acme Corp",
+          "expected_sensitivity": "KEEP",
+          "note": "Business document, not personal data."
+        }
+      ],
+      "categories": [
+        "org_public"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "lo01",
+      "text": "we visited Goa last summer",
+      "entities": [
+        {
+          "entity_type": "LOCATION",
+          "start": 11,
+          "end": 14,
+          "text": "Goa",
+          "expected_sensitivity": "KEEP",
+          "note": "Third-party / holiday reference."
+        }
+      ],
+      "categories": [
+        "location_public"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "lo02",
+      "text": "my friend studies at IIT Bombay",
+      "entities": [
+        {
+          "entity_type": "LOCATION",
+          "start": 21,
+          "end": 31,
+          "text": "IIT Bombay",
+          "expected_sensitivity": "KEEP",
+          "note": "Public institution, third party."
+        }
+      ],
+      "categories": [
+        "location_public"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "lo03",
+      "text": "I stay in Chennai with my family.",
+      "entities": [
+        {
+          "entity_type": "LOCATION",
+          "start": 10,
+          "end": 17,
+          "text": "Chennai",
+          "expected_sensitivity": "PROTECT",
+          "note": "Speaker's own location."
+        }
+      ],
+      "categories": [
+        "location_personal"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "lo04",
+      "text": "my address is 24, MG Road",
+      "entities": [
+        {
+          "entity_type": "ADDRESS",
+          "start": 14,
+          "end": 25,
+          "text": "24, MG Road",
+          "expected_sensitivity": "PROTECT",
+          "note": "Identifying street address."
+        }
+      ],
+      "categories": [
+        "location_personal",
+        "address"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "am01",
+      "text": "Rahul is a character in this story.",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 0,
+          "end": 5,
+          "text": "Rahul",
+          "expected_sensitivity": "REVIEW",
+          "note": "Fictional reference; not a real person."
+        }
+      ],
+      "categories": [
+        "ambiguous"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "am02",
+      "text": "The meeting is in Delhi tomorrow.",
+      "entities": [
+        {
+          "entity_type": "LOCATION",
+          "start": 18,
+          "end": 23,
+          "text": "Delhi",
+          "expected_sensitivity": "REVIEW",
+          "note": "A place with no personal tie; ambiguous whether it identifies anyone."
+        }
+      ],
+      "categories": [
+        "ambiguous",
+        "location_public"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "tr01",
+      "text": "Please send my medical records to Dr. Mehta.",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 38,
+          "end": 43,
+          "text": "Mehta",
+          "expected_sensitivity": "PROTECT",
+          "note": "Named recipient in a medical-data frame."
+        }
+      ],
+      "categories": [
+        "personal_transfer",
+        "ambiguous"
+      ],
+      "notes": "The 'Dr.' title may be split off; the surname is the sensitive span."
+    },
+    {
+      "id": "tr02",
+      "text": "email my bank details to Priya at work",
+      "entities": [
+        {
+          "entity_type": "PERSON",
+          "start": 25,
+          "end": 30,
+          "text": "Priya",
+          "expected_sensitivity": "PROTECT",
+          "note": "Recipient in a bank-details frame."
+        }
+      ],
+      "categories": [
+        "personal_transfer",
+        "informal"
+      ],
+      "notes": ""
+    }
+  ]
+}

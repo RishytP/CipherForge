@@ -23,7 +23,8 @@ from dataclasses import dataclass
 from typing import Iterable, List, Optional
 
 import phonenumbers
-from presidio_analyzer import Pattern, PatternRecognizer
+from presidio_analyzer import AnalysisExplanation, Pattern, PatternRecognizer, RecognizerResult
+from presidio_analyzer.entity_recognizer import EntityRecognizer
 
 from app.models.schemas import EntityType
 
@@ -413,6 +414,80 @@ class UrlRecognizer(PatternRecognizer):
 
 
 # --------------------------------------------------------------------------
+# Credentials (passwords, API keys, tokens)
+# --------------------------------------------------------------------------
+
+# A credential label followed by the secret value. The *value* is what we
+# protect, not the label, so this is implemented as a custom recognizer that
+# can emit a sub-span (Presidio's PatternRecognizer only reports full matches).
+_CREDENTIAL_LABELS = (
+    r"password|passwd|pwd|passphrase|passcode|secret|api[\s_-]?key|"
+    r"access[\s_-]?token|auth[\s_-]?token|bearer|token|otp"
+)
+_CREDENTIAL_RE = re.compile(
+    r"(?i)\b(?:" + _CREDENTIAL_LABELS + r")\b\s*(?:is|was|:|=|->)?\s*"
+    r"([^\s,;]+)"
+)
+
+# A trailing period/comma is sentence punctuation, not part of the secret.
+_TRAILING_PUNCT_RE = re.compile(r"[.!?;:,)\]}'\"]+$")
+
+
+class CredentialRecognizer(EntityRecognizer):
+    """Detect the *value* of a password / API key / token.
+
+    Emits a span covering only the secret, so ``My password is Microsoft123.``
+    protects ``Microsoft123`` and leaves the rest of the sentence intact.
+    """
+
+    def __init__(self) -> None:
+        super().__init__(
+            supported_entities=[EntityType.CREDENTIAL.value],
+            name="CipherForgeCredentialRecognizer",
+            context=["password", "secret", "token", "key", "otp"],
+        )
+
+    def load(self) -> None:  # noqa: D102
+        self.is_loaded = True
+
+    def get_supported_entities(self) -> List[str]:  # noqa: D102
+        return [EntityType.CREDENTIAL.value]
+
+    def analyze(self, text, entities, nlp_artifacts=None, regex_flags=None):  # noqa: D102
+        results: List[RecognizerResult] = []
+        for match in _CREDENTIAL_RE.finditer(text):
+            value = match.group(1)
+            start, end = match.start(1), match.end(1)
+            # Trim sentence punctuation from the captured value.
+            trimmed = _TRAILING_PUNCT_RE.sub("", value)
+            end = start + len(trimmed)
+            if len(trimmed) < 4:
+                continue
+            results.append(
+                RecognizerResult(
+                    entity_type=EntityType.CREDENTIAL.value,
+                    start=start,
+                    end=end,
+                    score=0.85,
+                    analysis_explanation=AnalysisExplanation(
+                        recognizer=self.name,
+                        original_score=0.85,
+                        pattern_name="credential_value",
+                        pattern=_CREDENTIAL_RE.pattern,
+                        textual_explanation=(
+                            "Credential label followed by a secret value."
+                        ),
+                    ),
+                    recognition_metadata={
+                        RecognizerResult.RECOGNIZER_NAME_KEY: self.name,
+                        RecognizerResult.RECOGNIZER_IDENTIFIER_KEY: self.id,
+                    },
+                )
+            )
+        return results
+
+
+# --------------------------------------------------------------------------
 # Location gazetteer (Indian cities/states spaCy's small model misses)
 # --------------------------------------------------------------------------
 
@@ -485,6 +560,7 @@ def build_recognizers() -> List[PatternRecognizer]:
         PanRecognizer(),
         AddressRecognizer(),
         UrlRecognizer(),
+        CredentialRecognizer(),
         LocationGazetteerRecognizer(),
     ]
 
@@ -499,5 +575,6 @@ __all__ = [
     "PanRecognizer",
     "AddressRecognizer",
     "UrlRecognizer",
+    "CredentialRecognizer",
     "LocationGazetteerRecognizer",
 ]

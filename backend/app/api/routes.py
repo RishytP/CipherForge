@@ -95,6 +95,7 @@ def anonymize(request: AnonymizeRequest) -> AnonymizeResponse:
         sanitized_text=result.sanitized_text,
         replacements=result.replacements,
         summary=analysis.summary,
+        sensitivity_summary=analysis.sensitivity_summary,
         uncertain_count=analysis.uncertain_count,
         strategy=request.strategy,
         engine_version=_settings.engine_version,
@@ -128,6 +129,7 @@ def process(request: ProcessRequest) -> ProcessResponse:
         entities=analysis.entities,
         replacements=result.replacements,
         summary=analysis.summary,
+        sensitivity_summary=analysis.sensitivity_summary,
         uncertain_count=analysis.uncertain_count,
         explanation=explanation,
         engine_version=_settings.engine_version,
@@ -157,6 +159,15 @@ def _build_explanation(text, analysis, result) -> list[PipelineStep]:
             ),
         ),
         PipelineStep(
+            name="classify",
+            detail=(
+                f"Sensitivity: {analysis.sensitivity_summary.protect} PROTECT, "
+                f"{analysis.sensitivity_summary.keep} KEEP, "
+                f"{analysis.sensitivity_summary.review} REVIEW. Detection and "
+                "sensitivity are decided separately."
+            ),
+        ),
+        PipelineStep(
             name="anonymize",
             detail=(
                 f"Replaced {sum(1 for r in result.replacements if r.replaced_original)} "
@@ -174,7 +185,9 @@ def _build_explanation(text, analysis, result) -> list[PipelineStep]:
                 detail=(
                     f"'{entity.text}' at [{entity.start}:{entity.end}] "
                     f"score={entity.score} level={entity.confidence_level.value} "
-                    f"method={entity.detection_method.value} -> {evidence}"
+                    f"method={entity.detection_method.value} "
+                    f"sensitivity={entity.sensitivity.value} "
+                    f"({entity.sensitivity_reason}) -> {evidence}"
                 ),
             )
         )

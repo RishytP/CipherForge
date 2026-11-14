@@ -141,3 +141,60 @@ def test_analyze_uncertain_flag_present(client):
     body = res.json()
     assert body["uncertain_count"] >= 1
     assert any(e["needs_review"] for e in body["entities"])
+
+
+# --------------------------------------------------------------------------
+# Sensitivity classification
+# --------------------------------------------------------------------------
+
+
+def test_analyze_exposes_sensitivity_decision(client):
+    res = client.post(
+        "/api/v1/analyze",
+        json={"text": "How do I get a 1 crore package at Microsoft?"},
+    )
+    assert res.status_code == 200
+    body = res.json()
+    ms = [e for e in body["entities"] if e["text"] == "Microsoft"]
+    assert ms, "Microsoft should still be detected"
+    assert ms[0]["sensitivity"] == "KEEP"
+    assert ms[0]["sensitivity_reason"] == "public_organization"
+    assert ms[0]["sensitivity_rationale"]
+    assert body["sensitivity_summary"]["keep"] >= 1
+
+
+def test_process_keeps_public_org_unchanged(client):
+    text = "How do I get a 1 crore package at Microsoft?"
+    res = client.post("/api/v1/process", json={"text": text})
+    assert res.status_code == 200
+    body = res.json()
+    assert body["sanitized_text"] == text
+    steps = {step["name"] for step in body["explanation"]}
+    assert "classify" in steps
+
+
+def test_process_anonymises_credentials(client):
+    res = client.post("/api/v1/process", json={"text": "My password is Microsoft123."})
+    assert res.status_code == 200
+    body = res.json()
+    assert "Microsoft123" not in body["sanitized_text"]
+    assert "[CREDENTIAL_1]" in body["sanitized_text"]
+
+
+def test_anonymize_replacement_reports_action_and_sensitivity(client):
+    res = client.post("/api/v1/anonymize", json={"text": "I want to work at Google."})
+    assert res.status_code == 200
+    body = res.json()
+    assert body["sanitized_text"] == "I want to work at Google."
+    repl = body["replacements"][0]
+    assert repl["sensitivity"] == "KEEP"
+    assert repl["action"] == "retained"
+    assert repl["replaced_original"] is False
+
+
+def test_process_personal_transfer_protects_recipient(client):
+    res = client.post(
+        "/api/v1/process", json={"text": "Send my personal records to Microsoft."}
+    )
+    body = res.json()
+    assert "Microsoft" not in body["sanitized_text"]

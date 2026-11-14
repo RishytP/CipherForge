@@ -154,13 +154,14 @@ export function mountSecureChat(host) {
     const { original, result } = state;
     const entities = result.entities || [];
 
-    // Build highlight spans from real offsets.
+    // Build highlight spans from real offsets. The class reflects the
+    // backend's sensitivity decision: kept spans are not "protected".
     const detSpans = entities.map((e, i) => ({
       start: e.start,
       end: e.end,
-      cls: e.needs_review ? "review" : "",
+      cls: e.sensitivity === "KEEP" ? "kept-span" : e.needs_review ? "review" : "",
       id: `d${i}`,
-      title: `${e.entity_type} · ${pct(e.score)}%`,
+      title: `${e.entity_type} · ${e.sensitivity || "?"} · ${pct(e.score)}%`,
     }));
 
     // --- original turn (with detections highlighted) ---
@@ -196,10 +197,13 @@ export function mountSecureChat(host) {
 
     // --- summary tiles ---
     const uncertain = result.uncertain_count || 0;
+    const sens = result.sensitivity_summary || null;
     hostEl.appendChild(
       h("div", { class: "grid stats", style: "margin-top:14px" }, [
         statTile(entities.length, "entities"),
         statTile(new Set(entities.map((e) => e.entity_type)).size, "types"),
+        statTile(sens ? sens.protect : 0, "protected", "good"),
+        statTile(sens ? sens.keep : 0, "kept visible"),
         statTile(uncertain, "need review", uncertain ? "warn" : ""),
       ])
     );

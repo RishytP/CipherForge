@@ -34,6 +34,7 @@ class EntityType(str, Enum):
     IN_AADHAAR = "IN_AADHAAR"
     IN_PAN = "IN_PAN"
     ID_NUMBER = "ID_NUMBER"
+    CREDENTIAL = "CREDENTIAL"
     OTHER = "OTHER"
 
 
@@ -56,6 +57,18 @@ class ConfidenceLevel(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     UNCERTAIN = "uncertain"
+
+
+class SensitivityDecision(str, Enum):
+    """Whether a detected entity is sensitive in its current context.
+
+    Recognition ("is this an entity?") and sensitivity ("should it be
+    protected?") are separate questions; this enum is the answer to the second.
+    """
+
+    PROTECT = "PROTECT"
+    KEEP = "KEEP"
+    REVIEW = "REVIEW"
 
 
 # --------------------------------------------------------------------------
@@ -83,6 +96,26 @@ class DetectedEntity(BaseModel):
     needs_review: bool = Field(
         False, description="True when the engine is not confident enough to auto-act."
     )
+    sensitivity: SensitivityDecision = Field(
+        SensitivityDecision.PROTECT,
+        description=(
+            "Contextual sensitivity decision: PROTECT (anonymise), KEEP (leave "
+            "unchanged) or REVIEW (ambiguous). Defaults to PROTECT for backward "
+            "compatibility with callers that build entities directly."
+        ),
+    )
+    sensitivity_reason: str = Field(
+        "unspecified",
+        description="Short machine-readable reason code for the sensitivity decision.",
+    )
+    sensitivity_rationale: str = Field(
+        "",
+        description="Human-readable explanation of why the span was protected, kept or flagged.",
+    )
+    is_personal_data: bool = Field(
+        False,
+        description="True when the span identifies a person or holds their personal data.",
+    )
 
     @field_validator("end")
     @classmethod
@@ -99,6 +132,14 @@ class EntitySummary(BaseModel):
     entity_type: EntityType
     count: int
     max_score: float
+
+
+class SensitivitySummary(BaseModel):
+    """Counts of detections per sensitivity decision."""
+
+    protect: int = 0
+    keep: int = 0
+    review: int = 0
 
 
 # --------------------------------------------------------------------------
@@ -166,6 +207,10 @@ class AnalyzeResponse(BaseModel):
     text_length: int
     entities: List[DetectedEntity]
     summary: List[EntitySummary]
+    sensitivity_summary: SensitivitySummary = Field(
+        default_factory=SensitivitySummary,
+        description="Counts of PROTECT / KEEP / REVIEW decisions across detected entities.",
+    )
     uncertain_count: int = Field(
         0, description="Detections the engine flagged as needing review."
     )
@@ -184,12 +229,23 @@ class ReplacementMetadata(BaseModel):
     replaced_original: bool = Field(
         True, description="False when the span was kept verbatim (e.g. below threshold)."
     )
+    sensitivity: SensitivityDecision = Field(
+        SensitivityDecision.PROTECT,
+        description="Sensitivity decision that governed this span.",
+    )
+    sensitivity_reason: str = Field("unspecified")
+    sensitivity_rationale: str = Field("")
+    action: str = Field(
+        "anonymized",
+        description="Final action taken: anonymized | retained | flagged.",
+    )
 
 
 class AnonymizeResponse(BaseModel):
     sanitized_text: str
     replacements: List[ReplacementMetadata]
     summary: List[EntitySummary]
+    sensitivity_summary: SensitivitySummary = Field(default_factory=SensitivitySummary)
     uncertain_count: int = 0
     strategy: str
     engine_version: str
@@ -205,6 +261,7 @@ class ProcessResponse(BaseModel):
     entities: List[DetectedEntity]
     replacements: List[ReplacementMetadata]
     summary: List[EntitySummary]
+    sensitivity_summary: SensitivitySummary = Field(default_factory=SensitivitySummary)
     uncertain_count: int = 0
     explanation: List[PipelineStep] = Field(default_factory=list)
     disclaimer: str = Field(

@@ -20,12 +20,15 @@ from app.config import get_settings
 from app.detection.confidence import finalize_entity, resolve_overlaps, score_to_level
 from app.detection.contextual import ContextualAnalyzer
 from app.detection.nlp import analyze_with_presidio, run_spacy_ner
+from app.detection.sensitivity import SensitivityClassifier
 from app.models.schemas import (
     AnalyzeResponse,
     DetectedEntity,
     DetectionMethod,
     EntitySummary,
     EntityType,
+    SensitivityDecision,
+    SensitivitySummary,
 )
 
 # Entity types spaCy/Presidio may emit that we map or drop.
@@ -42,6 +45,7 @@ _PRESIDIO_TO_CIPHERFORGE = {
     "PERSON": EntityType.PERSON,
     "LOCATION": EntityType.LOCATION,
     "ORGANIZATION": EntityType.ORGANIZATION,
+    "CREDENTIAL": EntityType.CREDENTIAL,
 }
 
 
@@ -64,6 +68,7 @@ class PiiAnalyzer:
     def __init__(self) -> None:
         self.settings = get_settings()
         self.contextual = ContextualAnalyzer()
+        self.sensitivity = SensitivityClassifier()
 
     # -- public API --------------------------------------------------------
 
@@ -89,11 +94,13 @@ class PiiAnalyzer:
             detected = [d for d in detected if d.entity_type in allowed]
 
         detected = resolve_overlaps(detected)
+        detected = self._classify_sensitivity(text, detected)
 
         return AnalyzeResponse(
             text_length=len(text),
             entities=detected,
             summary=_summarize(detected),
+            sensitivity_summary=_sensitivity_summary(detected),
             uncertain_count=sum(1 for d in detected if d.needs_review),
             engine_version=self.settings.engine_version,
         )
@@ -101,6 +108,37 @@ class PiiAnalyzer:
     def analyze_entities(self, text: str, **kwargs) -> List[DetectedEntity]:
         """Convenience wrapper returning only the entity list."""
         return self.analyze(text, **kwargs).entities
+
+    def _classify_sensitivity(
+        self, text: str, entities: List[DetectedEntity]
+    ) -> List[DetectedEntity]:
+        """Attach a PROTECT / KEEP / REVIEW decision to each detected entity.
+
+        This is the boundary between *recognition* and *protection*. Detection
+        says what the text is; this pass decides whether it is sensitive in
+        context and annotates the entity in place.
+        """
+        for entity in entities:
+            result = self.sensitivity.classify(
+                text=text,
+                entity_type=entity.entity_type,
+                start=entity.start,
+                end=entity.end,
+                score=entity.score,
+                needs_review=entity.needs_review,
+            )
+            entity.sensitivity = result.decision
+            entity.sensitivity_reason = result.reason
+            entity.sensitivity_rationale = result.rationale
+            entity.is_personal_data = result.is_personal_data
+            for ev in result.evidence:
+                tagged = f"sensitivity[{result.decision.value}]: {ev}"
+                if tagged not in entity.contextual_evidence:
+                    entity.contextual_evidence.append(tagged)
+            # A REVIEW decision is by definition "needs a human".
+            if result.decision is SensitivityDecision.REVIEW:
+                entity.needs_review = True
+        return entities
 
     # -- layer collection --------------------------------------------------
 
@@ -283,6 +321,18 @@ def _summarize(entities: List[DetectedEntity]) -> List[EntitySummary]:
         )
         for key, scores in sorted(counts.items())
     ]
+
+
+def _sensitivity_summary(entities: List[DetectedEntity]) -> SensitivitySummary:
+    summary = SensitivitySummary()
+    for e in entities:
+        if e.sensitivity is SensitivityDecision.PROTECT:
+            summary.protect += 1
+        elif e.sensitivity is SensitivityDecision.KEEP:
+            summary.keep += 1
+        else:
+            summary.review += 1
+    return summary
 
 
 __all__ = ["PiiAnalyzer"]

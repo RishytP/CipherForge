@@ -10,6 +10,17 @@ test suite, or a known property of the components used.
 The evaluation harness (`python -m tests.evaluation`) reports
 `P=0.983  R=0.983  F1=0.983` over 73 synthetic examples with 115 gold spans.
 
+The sensitivity harness (`python -m tests.sensitivity_eval`) reports a separate
+set of numbers over 31 regression examples with 33 labelled spans:
+
+```
+ENTITY DETECTION      P=0.969  R=0.939  F1=0.954
+SENSITIVITY (micro)   P=1.000  R=0.970  F1=0.985   macro-F1=0.986
+FP anonymisation rate = 0.000   (0/12 KEEP spans anonymised)
+FN protection rate    = 0.000   (0/19 PROTECT spans left visible)
+REVIEW frequency      = 0.062   (2/32 detected entities)
+```
+
 **This is not a claim of real-world accuracy.** The dataset and the recognisers
 were written by the same author in the same session, which biases the numbers
 upward. The dataset is small, uses a narrow set of phrasings, and its
@@ -66,6 +77,40 @@ in the report means 98.2% of true positives also matched the boundary exactly.
   schema but is not currently produced; spaCy's `DATE` output is noisy and was
   excluded to protect precision.
 
+## Where sensitivity classification is limited
+
+The sensitivity layer (`app/detection/sensitivity.py`) decides PROTECT / KEEP /
+REVIEW. It is a cue-and-policy system, not a semantic model, so its judgement is
+only as good as the cues it knows.
+
+* **Cue-dependent.** The layer reads surrounding words. A public organisation
+  that appears in a personal-data frame ("send my records to Acme") is
+  protected, and a personal place with no cue ("I was in Pune" — no "live" or
+  "stay") is only flagged for review, not protected. A frame the lexicons do not
+  cover will be misclassified.
+
+* **The public-name list is a starting point, not a model.** Names in
+  `_PUBLIC_ENTITIES` are treated as non-personal. A public entity missing from
+  that list falls back to the generic organisation rule (kept visible), which is
+  usually right, but a *private* organisation with a name that looks public can
+  be kept when it should be protected.
+
+* **Names are not inherently sensitive.** A person name with no personal tie is
+  flagged for review rather than protected. This is deliberate: a name in a
+  news sentence is not the speaker's data. It does mean a genuinely identifying
+  bare name with no cue word can pass through as REVIEW and, under the default
+  privacy-first setting, still be anonymised — but the decision is recorded as
+  uncertain.
+
+* **Credentials are label-driven.** The credential recogniser needs a label
+  ("password", "api key", "otp") near the secret. A bare secret with no label
+  ("here it is: sk-...") is not detected as a credential.
+
+* **Policy flags change behaviour, not accuracy.** `CIPHERFORGE_PROTECT_ORGANIZATIONS`
+  and `CIPHERFORGE_PROTECT_LOCATIONS` widen protection. Turning them on trades
+  false negatives for false positives by design; they do not make the cue
+  judgement any better.
+
 ## Where anonymisation is limited
 
 * **Placeholder coreference is an approximation.** "Rahul" and "Rahul Sharma"
@@ -98,8 +143,12 @@ in the report means 98.2% of true positives also matched the boundary exactly.
   model call can be added after the `anonymize` step, but nothing sends or
   receives model traffic today.
 
-* **No frontend integration.** The previous prototype's hard-coded JavaScript
-  has not been replaced. `frontend/` is reserved but empty.
+* **The frontend is a developer workbench, not a product UI.** `frontend/workbench/`
+  is a real, backend-driven interface (no hard-coded detection logic), but it is
+  an internal evaluation surface: no auth, no multi-user support, and it is
+  disabled when `CIPHERFORGE_WORKBENCH_ENABLED` is false. It renders the
+  sensitivity decision and the `needs_review` state, but it is not hardened for
+  external users.
 
 * **No persistence layer, by design.** There is no audit log, no request store
   and no metrics sink. Everything is computed per request and discarded.
@@ -115,10 +164,14 @@ in the report means 98.2% of true positives also matched the boundary exactly.
 2. **A larger evaluation set** written by someone other than the implementer,
    ideally with real (consented, synthetic-substituted) phrasing, to get an
    honest accuracy number.
-3. **Organisation detection** — currently the weakest category.
-4. **A calibrated confidence model** — replace additive heuristics with a small
+3. **A learned sensitivity model.** The cue lexicons in
+   `app/detection/sensitivity.py` are a good start but brittle. A small
+   classifier trained on labelled (span, context, decision) triples would
+   generalise to framing the lexicons do not cover.
+4. **Organisation detection** — currently the weakest category.
+5. **A calibrated confidence model** — replace additive heuristics with a small
    model trained on labelled data.
-5. **Frontend integration** — replace the prototype's JavaScript with calls to
-   `/api/v1/process`, and render the `needs_review` state distinctly.
-6. **Optional local model routing** — integrate an approved local model behind
+6. **Harden the workbench** — auth, rate limiting and a proper session model
+   before it faces anyone outside the development team.
+7. **Optional local model routing** — integrate an approved local model behind
    the existing pipeline boundary.

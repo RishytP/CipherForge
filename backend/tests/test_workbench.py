@@ -31,7 +31,9 @@ def test_system_endpoint_reports_real_counts(client):
     assert r.status_code == 200
     body = r.json()
     assert body["app_name"] == "CipherForge"
-    assert len(body["layers"]) == 4
+    # Layers A–E: patterns, NLP, contextual, confidence, sensitivity.
+    assert len(body["layers"]) == 5
+    assert any("sensitivity" in layer["implementation"] for layer in body["layers"])
     # Counts must match the actual dataset, not a hard-coded value.
     assert body["dataset_examples"] >= 50
     assert body["dataset_gold_spans"] >= body["dataset_examples"]

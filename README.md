@@ -26,11 +26,13 @@ implemented, running, and tested.
 | --- | --- |
 | FastAPI backend, 3 endpoints | ✅ working |
 | Multi-layer PII detection (A–D) | ✅ working |
-| Custom recognisers | ✅ 9 recognisers |
+| Sensitivity classification (Layer E) | ✅ working |
+| Custom recognisers | ✅ 10 recognisers |
 | Anonymisation with consistent placeholders | ✅ working |
 | Synthetic dataset (≥ 50 examples) | ✅ 73 examples, 115 gold spans |
 | Precision / recall / F1 harness | ✅ measured (see below) |
-| pytest suite | ✅ 80 tests passing |
+| Sensitivity regression set + harness | ✅ 31 examples, 33 labelled spans |
+| pytest suite | ✅ 123 tests passing |
 | Test console (frontend) | ✅ working, served at `/legacy` |
 | Developer Workbench (frontend) | ✅ working, served at `/` |
 | Next.js frontend | ⏳ not adopted (see decision below) |
@@ -40,6 +42,15 @@ implemented, running, and tested.
 
 ```
 OVERALL  P=0.983  R=0.983  F1=0.983  (tp=113 fp=2 fn=2 exact=0.982)
+```
+
+**Sensitivity classification** (`python -m tests.sensitivity_eval`):
+
+```
+ENTITY DETECTION      P=0.969  R=0.939  F1=0.954
+SENSITIVITY (micro)   P=1.000  R=0.970  F1=0.985   macro-F1=0.986
+FP anonymisation rate = 0.000   (0/12 KEEP spans anonymised)
+FN protection rate    = 0.000   (0/19 PROTECT spans left visible)
 ```
 
 These are real, reproducible numbers — but read them honestly: the dataset and
@@ -52,7 +63,7 @@ still weak.
 
 ## How detection works
 
-Detection is a pipeline of four independent layers. Each layer can be tested
+Detection is a pipeline of five independent layers. Each layer can be tested
 and replaced on its own; nothing is buried in one giant function.
 
 ```
@@ -68,19 +79,28 @@ and replaced on its own; nothing is buried in one giant function.
                        │          re-typing, confidence shifts      │
                        ├──────────────────────────────────────────┤
                        │ Layer D  confidence + overlap resolution   │
+                       ├──────────────────────────────────────────┤
+                       │ Layer E  sensitivity classification        │
+                       │          PROTECT / KEEP / REVIEW           │
                        └───────────────────┬──────────────────────┘
                                            ▼
-                          entities: type, offsets, score,
-                          method, contextual evidence
+                          entities: type, offsets, score, method,
+                          contextual evidence, sensitivity decision
 ```
+
+The key split is **detection vs. sensitivity**. Layers A–D answer *"what is
+this text?"*. Layer E answers the different question *"is it sensitive in this
+context, and should it be hidden?"*. A public company name is a real entity but
+not personal data, so it is detected and then explicitly kept visible.
 
 ### Layer A — structured patterns (`app/detection/patterns.py`)
 
 Custom Presidio `PatternRecognizer`s for email (including `rahul (at) gmail
 (dot) com` obfuscation and spaced dots), phone numbers (Indian + international,
 validated with `phonenumbers`), Indian PIN codes, IPv4/IPv6, Indian PAN,
-Aadhaar (Verhoeff checksum validated), URLs, address fragments, and a
-location gazetteer for Indian cities spaCy's small model misses.
+Aadhaar (Verhoeff checksum validated), URLs, address fragments, credential
+values (`password`/`api key`/`otp` labels), and a location gazetteer for Indian
+cities spaCy's small model misses.
 
 ### Layer B — NLP (`app/detection/nlp.py`)
 
@@ -121,6 +141,38 @@ deterministically by (type priority, span length, score). Spans the engine is
 unsure about are marked `needs_review` — the engine never pretends to be
 certain.
 
+### Layer E — sensitivity classification (`app/detection/sensitivity.py`)
+
+Detection alone is not enough: it says *what* a span is, not *whether it should
+be hidden*. An earlier build anonymised `Microsoft` in
+`"How do I get a 1 crore package at Microsoft?"`, which is wrong — the company
+name is public and the sentence is about a salary, not about a person.
+
+Layer E makes that second decision and returns one of:
+
+| Decision | Meaning | Example |
+| --- | --- | --- |
+| `PROTECT` | Personal / sensitive in context — anonymise. | `My email is rahul@example.com.` |
+| `KEEP` | A real entity that is not personal data — leave visible. | `...a 1 crore package at Microsoft?` |
+| `REVIEW` | Genuinely ambiguous — do not decide confidently. | `Rahul is a character in this story.` |
+
+It works from evidence, not a blocklist alone:
+
+1. **Inherently personal types** — email, phone, government IDs, credit cards,
+   credentials and addresses are personal by nature. No context is needed.
+2. **Public entities** — a curated set of well-known companies and institutions
+   is treated as non-personal unless the sentence frames them as a recipient of
+   personal data.
+3. **Personal framing** — `my name is`, `I live in`, `send my records to`, and
+   similar cues tie a span to the speaker or to a transfer of personal data.
+4. **Third-party framing** — `my friend studies at`, `we visited`, `works at`
+   keep a place or organisation visible.
+
+Every decision records a machine-readable `reason`, a human `rationale`, and the
+evidence used. Two policy flags widen protection when a deployment needs it:
+`CIPHERFORGE_PROTECT_ORGANIZATIONS` and `CIPHERFORGE_PROTECT_LOCATIONS` (both
+off by default — see `app/config.py`).
+
 ---
 
 ## Anonymisation (`app/anonymization/`)
@@ -150,7 +202,8 @@ Base path `/api/v1`. Interactive docs at `/docs` when the server is running.
 
 ### `POST /api/v1/analyze`
 
-Detect only. Returns spans, positions, scores, methods and evidence.
+Detect only. Returns spans, positions, scores, methods, evidence, and a
+per-span sensitivity decision (`PROTECT` / `KEEP` / `REVIEW`) with its reason.
 
 ```bash
 curl -s -X POST http://127.0.0.1:8000/api/v1/analyze \
@@ -160,7 +213,9 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/analyze \
 
 ### `POST /api/v1/anonymize`
 
-Detect + sanitise. Returns `sanitized_text`, replacement metadata and a summary.
+Detect + classify + sanitise. Returns `sanitized_text`, replacement metadata
+(including the sensitivity decision and the final `action`:
+`anonymized` / `retained` / `flagged`) and a summary.
 
 ```bash
 curl -s -X POST http://127.0.0.1:8000/api/v1/anonymize \
@@ -168,10 +223,20 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/anonymize \
   -d '{"text":"my no is 98 765-43210, call after 6"}'
 ```
 
+A public organisation is left untouched:
+
+```bash
+curl -s -X POST http://127.0.0.1:8000/api/v1/anonymize \
+  -H 'Content-Type: application/json' \
+  -d '{"text":"How do I get a 1 crore package at Microsoft?"}'
+# -> {"sanitized_text":"How do I get a 1 crore package at Microsoft?", ...}
+```
+
 ### `POST /api/v1/process`
 
-The full pipeline: validate → detect → score → anonymise → explain. Returns the
-sanitised text, the entities, and a structured step-by-step explanation.
+The full pipeline: validate → detect → score → **classify** → anonymise →
+explain. Returns the sanitised text, the entities, a `sensitivity_summary`, and
+a structured step-by-step explanation.
 
 ```bash
 curl -s -X POST http://127.0.0.1:8000/api/v1/process \
@@ -286,9 +351,11 @@ work goes into the Workbench.
 
 ```bash
 cd backend
-python -m pytest -q                    # full suite (80 tests)
+python -m pytest -q                    # full suite (123 tests)
 python -m tests.evaluation             # precision / recall / F1 report
+python -m tests.sensitivity_eval       # sensitivity classification report
 python tests/fixtures/build_dataset.py # regenerate the synthetic dataset
+python tests/fixtures/build_sensitivity_dataset.py  # regenerate the sensitivity set
 ```
 
 ---
@@ -303,11 +370,12 @@ backend/
     api/routes.py           /analyze, /anonymize, /process
     api/workbench.py        /api/v1/workbench/* (system, evaluation, dataset, feedback)
     detection/
-      analyzer.py           orchestrates layers A–D
+      analyzer.py           orchestrates layers A–E
       patterns.py           Layer A recognisers + gazetteer
       nlp.py                Layer B spaCy/Presidio engine
       contextual.py         Layer C cue lexicons + contextual scoring
       confidence.py         Layer D scoring + overlap resolution
+      sensitivity.py        Layer E PROTECT / KEEP / REVIEW classification
     anonymization/
       engine.py             strategies + span-safe replacement
       placeholders.py       identity registry + placeholder generation
@@ -320,11 +388,15 @@ backend/
     test_anonymization.py   placeholders, strategies, consistency
     test_api.py             endpoint contract + input validation
     test_dataset.py         dataset integrity + metric regression floors
+    test_sensitivity.py     Layer E classification + the Microsoft regression
     test_workbench.py       workbench endpoints + feedback lifecycle
-    evaluation.py           P/R/F1 harness
+    evaluation.py           entity-detection P/R/F1 harness
+    sensitivity_eval.py     sensitivity P/R/F1 + FP/FN rate harness
     fixtures/
-      build_dataset.py      generates the dataset
+      build_dataset.py      generates the detection dataset
       synthetic_dataset.json
+      build_sensitivity_dataset.py  generates the sensitivity regression set
+      sensitivity_dataset.json
 docs/
   LIMITATIONS.md            honest account of what fails and why
 frontend/

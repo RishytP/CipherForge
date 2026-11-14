@@ -61,6 +61,16 @@ class Settings(BaseSettings):
     # --- Privacy / logging ---
     log_raw_text: bool = False
 
+    # --- Sensitivity policy ---
+    # Organisation names are NOT personal data by default. Enable this to treat
+    # every organisation name as confidential (e.g. an internal deployment that
+    # must not leak vendor/client names). Off by default.
+    protect_organizations: bool = False
+    # When True, place names with no personal context are protected instead of
+    # only flagged for review. Off by default: a bare "Delhi" is not the
+    # speaker's location unless the sentence says so.
+    protect_locations: bool = False
+
     # --- Developer workbench ---
     # The workbench is a development/evaluation tool, not a production surface.
     # It exposes read-only system/evaluation endpoints and a feedback queue.
