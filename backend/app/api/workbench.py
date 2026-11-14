@@ -109,6 +109,15 @@ LAYERS = [
         summary="Scoring, discrete levels incl. uncertain, overlap resolution, review flags.",
         implementation="app/detection/confidence.py",
     ),
+    ArchitectureLayer(
+        name="Layer E - Sensitivity classification",
+        summary=(
+            "Decides PROTECT / KEEP / REVIEW per detected span. Detection says "
+            "what the text is; this layer decides whether it is sensitive in "
+            "context, so public names are not anonymised by default."
+        ),
+        implementation="app/detection/sensitivity.py",
+    ),
 ]
 
 

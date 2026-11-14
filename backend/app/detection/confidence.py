@@ -23,6 +23,7 @@ from app.models.schemas import ConfidenceLevel, DetectedEntity
 _TYPE_PRIORITY = {
     "EMAIL_ADDRESS": 100,
     "CREDIT_CARD": 95,
+    "CREDENTIAL": 92,
     "IN_AADHAAR": 90,
     "IN_PAN": 90,
     "PHONE_NUMBER": 85,

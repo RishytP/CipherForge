@@ -36,6 +36,7 @@ from app.models.schemas import (
     DetectedEntity,
     EntityType,
     ReplacementMetadata,
+    SensitivityDecision,
 )
 
 _SUPPORTED_STRATEGIES = {"placeholder", "redact", "mask", "hash"}
@@ -97,11 +98,16 @@ class AnonymizationEngine:
         plan: List[tuple] = []
         for entity in ordered:
             original = text[entity.start:entity.end]
-            keep = entity.score < threshold or (
+            # The sensitivity stage decides *whether* to act; this engine only
+            # decides *how*. A KEEP span is left verbatim; a REVIEW span is
+            # anonymised (privacy-first) but reported as flagged for a human.
+            decision = _decision_of(entity)
+            below_threshold = entity.score < threshold
+            keep = decision is SensitivityDecision.KEEP or below_threshold or (
                 entity.needs_review and not self.settings.anonymize_uncertain
             )
             if keep:
-                plan.append((entity, original, False))
+                plan.append((entity, original, False, decision))
                 continue
 
             entity_strategy = operator_config.get(
@@ -121,18 +127,18 @@ class AnonymizationEngine:
                 placeholder = self._mask(original)
             else:  # hash
                 placeholder = self._hash(original, salt)
-            plan.append((entity, placeholder, True))
+            plan.append((entity, placeholder, True, decision))
 
         replacements: List[ReplacementMetadata] = []
         # Build output right-to-left so earlier offsets stay valid.
         cursor = len(text)
         pieces: List[str] = []
-        for entity, placeholder, replaced in reversed(plan):
+        for entity, placeholder, replaced, decision in reversed(plan):
             pieces.append(text[entity.end:cursor])
             cursor = entity.start
             pieces.append(placeholder)
             replacements.append(
-                _meta(entity, placeholder=placeholder, replaced=replaced)
+                _meta(entity, placeholder=placeholder, replaced=replaced, decision=decision)
             )
 
         pieces.append(text[:cursor])
@@ -164,9 +170,24 @@ def _as_entity_type(value) -> EntityType:
     return value if isinstance(value, EntityType) else EntityType(value)
 
 
+def _decision_of(entity: DetectedEntity) -> SensitivityDecision:
+    """Read the sensitivity decision, tolerating raw values and legacy callers."""
+    value = getattr(entity, "sensitivity", None)
+    if value is None:
+        # Legacy entity without a sensitivity stage: protect (previous behaviour).
+        return SensitivityDecision.PROTECT
+    return value if isinstance(value, SensitivityDecision) else SensitivityDecision(value)
+
+
 def _meta(
-    entity: DetectedEntity, placeholder: str, replaced: bool
+    entity: DetectedEntity, placeholder: str, replaced: bool, decision: SensitivityDecision
 ) -> ReplacementMetadata:
+    if replaced:
+        action = "anonymized"
+    elif decision is SensitivityDecision.REVIEW:
+        action = "flagged"
+    else:
+        action = "retained"
     return ReplacementMetadata(
         entity_type=_as_entity_type(entity.entity_type),
         placeholder=placeholder,
@@ -175,6 +196,10 @@ def _meta(
         score=entity.score,
         detection_method=entity.detection_method,
         replaced_original=replaced,
+        sensitivity=decision,
+        sensitivity_reason=getattr(entity, "sensitivity_reason", "unspecified"),
+        sensitivity_rationale=getattr(entity, "sensitivity_rationale", ""),
+        action=action,
     )
 
 

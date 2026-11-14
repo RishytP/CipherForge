@@ -11,8 +11,11 @@ handling **informal, irregular human text**, not clean formatted text.
 ## Layout
 
 - `backend/app/` — the FastAPI service.
-  - `detection/` — Layers A–D. `analyzer.py` orchestrates; the other four files
-    each own one layer. Keep it that way: no layer logic in the orchestrator.
+  - `detection/` — Layers A–E. `analyzer.py` orchestrates; the other five
+    files each own one layer. Keep it that way: no layer logic in the
+    orchestrator. Layers A–D answer *what is this span*; `sensitivity.py`
+    (Layer E) answers the separate question *is it sensitive here*, returning
+    PROTECT / KEEP / REVIEW. Never merge the two concerns.
   - `anonymization/` — strictly separate from detection. Consumes detected
     spans only; never sees raw text with no detections.
   - `api/routes.py` — the core public endpoints (`/analyze`, `/anonymize`,
@@ -43,9 +46,11 @@ handling **informal, irregular human text**, not clean formatted text.
 ```bash
 cd backend
 source ../.venv/bin/activate
-python -m pytest -q                     # 80 tests
-python -m tests.evaluation              # P/R/F1 report
+python -m pytest -q                     # 123 tests
+python -m tests.evaluation              # entity-detection P/R/F1 report
+python -m tests.sensitivity_eval        # sensitivity P/R/F1 + FP/FN report
 python tests/fixtures/build_dataset.py  # regenerate dataset (rewrites JSON)
+python tests/fixtures/build_sensitivity_dataset.py  # regenerate sensitivity set
 uvicorn app.main:app --reload --port 8000
 # then open http://127.0.0.1:8000/  (workbench) or /legacy (old console)
 ```
@@ -64,6 +69,14 @@ uvicorn app.main:app --reload --port 8000
   corrupts offsets and punctuation.
 - **Placeholders are numbered in reading order** (left-to-right), even though
   the engine builds output right-to-left.
+- **Detection ≠ sensitivity.** A confident detection is not automatically
+  sensitive. Organisations are kept visible by default; only an explicit
+  confidentiality policy (`CIPHERFORGE_PROTECT_ORGANIZATIONS`) or a
+  personal-data frame protects them. Public places are kept unless tied to the
+  speaker (`I live in …`). Do not "fix" a kept entity by forcing PROTECT.
+- **Sensitivity decisions must stay explainable.** Every decision carries a
+  machine-readable `reason` and a human `rationale`. Add new cue rules as
+  explicit, named branches — never as an opaque score.
 - **Honest metrics.** The synthetic dataset was written by the same author as
   the recognisers. Never present its numbers as real-world accuracy. See
   `docs/LIMITATIONS.md`.

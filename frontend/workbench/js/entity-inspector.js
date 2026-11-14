@@ -13,6 +13,14 @@ const METHOD_LABEL = {
   combined: "pattern+context",
 };
 
+// Sensitivity decision -> short human label. The decision is made by the
+// backend; the UI only presents it.
+const SENSITIVITY_LABEL = {
+  PROTECT: "protected",
+  KEEP: "kept visible",
+  REVIEW: "needs review",
+};
+
 /**
  * @param {Array} entities            backend entities (or normalised gold spans)
  * @param {object} opts
@@ -34,7 +42,16 @@ export function renderEntityList(entities, opts = {}) {
     const isGold = variant === "gold";
     const review = !!e.needs_review;
     const kept = e.replaced_original === false;
-    const cls = [isGold ? "gold" : "", review ? "review" : "", kept ? "kept" : ""].filter(Boolean).join(" ");
+    const decision = e.sensitivity || null;
+    const cls = [
+      isGold ? "gold" : "",
+      review ? "review" : "",
+      kept ? "kept" : "",
+      decision === "KEEP" ? "sens-keep" : "",
+      decision === "PROTECT" ? "sens-protect" : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
     const active = opts.activeIndex === i;
 
     const li = h("li", {
@@ -61,6 +78,14 @@ export function renderEntityList(entities, opts = {}) {
     ]);
 
     if (!isGold) {
+      if (decision) {
+        top.appendChild(
+          h("span", {
+            class: `badge sens sens-${decision.toLowerCase()}`,
+            text: SENSITIVITY_LABEL[decision] || decision,
+          })
+        );
+      }
       top.appendChild(
         h("span", {
           class: "entity-meta",
@@ -74,6 +99,16 @@ export function renderEntityList(entities, opts = {}) {
     }
 
     li.appendChild(top);
+
+    // Why the engine made this decision, in the backend's own words.
+    if (!isGold && decision) {
+      li.appendChild(
+        h("div", { class: "small muted sens-reason" }, [
+          h("span", { class: "mono", text: e.sensitivity_reason || "unspecified" }),
+          e.sensitivity_rationale ? " — " + e.sensitivity_rationale : "",
+        ])
+      );
+    }
 
     if (!isGold) {
       li.appendChild(
@@ -128,7 +163,7 @@ export function renderEntityList(entities, opts = {}) {
   return list;
 }
 
-/** Confidence chip row used by dashboards. */
+/** Confidence + sensitivity chip row used by dashboards. */
 export function confidenceLegend() {
   return h("div", { class: "small muted" }, [
     h("span", { class: "badge", text: "confident" }),
@@ -137,6 +172,31 @@ export function confidenceLegend() {
     " ",
     h("span", { class: "badge muted", text: "kept verbatim" }),
     " ",
+    h("span", { class: "badge sens sens-protect", text: "protected" }),
+    " ",
+    h("span", { class: "badge sens sens-keep", text: "kept visible" }),
+    " ",
+    h("span", { class: "badge sens sens-review", text: "needs review" }),
+    " ",
     h("span", { class: "badge gold", text: "gold label" }),
+  ]);
+}
+
+/** Compact PROTECT / KEEP / REVIEW breakdown from the backend summary. */
+export function sensitivitySummaryRow(summary) {
+  if (!summary) return null;
+  return h("div", { class: "grid stats", style: "margin-top:10px" }, [
+    h("div", { class: "stat ok" }, [
+      h("div", { class: "n", text: String(summary.protect ?? 0) }),
+      h("div", { class: "l", text: "protected" }),
+    ]),
+    h("div", { class: "stat" }, [
+      h("div", { class: "n", text: String(summary.keep ?? 0) }),
+      h("div", { class: "l", text: "kept visible" }),
+    ]),
+    h("div", { class: "stat warn" }, [
+      h("div", { class: "n", text: String(summary.review ?? 0) }),
+      h("div", { class: "l", text: "needs review" }),
+    ]),
   ]);
 }

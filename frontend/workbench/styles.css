@@ -280,6 +280,8 @@ mark.span {
   border-bottom-color: var(--accent);
 }
 mark.span.review { background: var(--warn-glow); border-bottom-color: var(--warn); }
+/* A detected entity the sensitivity stage decided to keep visible. */
+mark.span.kept-span { background: rgba(109, 127, 144, 0.14); border-bottom-color: var(--muted); border-bottom-style: dotted; }
 mark.span.kept { background: rgba(109, 127, 144, 0.16); border-bottom-color: var(--muted); }
 mark.span.gold { background: rgba(90, 169, 255, 0.16); border-bottom-color: var(--blue); }
 mark.span.active { outline: 2px solid var(--accent); outline-offset: 1px; }
@@ -322,6 +324,14 @@ mark.span.gold.active { outline-color: var(--blue); }
 .badge.review { background: var(--warn-glow); color: var(--warn); }
 .badge.gold { background: rgba(90, 169, 255, 0.16); color: var(--blue); }
 .badge.muted { background: rgba(109, 127, 144, 0.16); color: var(--muted); }
+/* Sensitivity decision badges: PROTECT / KEEP / REVIEW. */
+.badge.sens { font-weight: 600; }
+.badge.sens-protect { background: var(--accent-glow); color: var(--accent); }
+.badge.sens-keep { background: rgba(109, 127, 144, 0.16); color: var(--muted); }
+.badge.sens-review { background: var(--warn-glow); color: var(--warn); }
+.entity.sens-protect { border-left-color: var(--accent); }
+.entity.sens-keep { border-left-color: var(--muted); }
+.sens-reason { margin-top: 4px; }
 
 .entity-text { font-family: var(--mono); font-size: 13px; background: var(--bg); padding: 1px 6px; border-radius: 4px; word-break: break-all; }
 .entity-meta { margin-left: auto; font-size: 11px; color: var(--muted); font-family: var(--mono); text-align: right; }
